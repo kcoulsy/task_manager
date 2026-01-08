@@ -7,6 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { ROUTES } from "~~/utils/routes";
+
+definePageMeta({
+  middleware: "require-no-auth",
+});
 
 const formSchema = toTypedSchema(
   z.object({
@@ -33,8 +38,7 @@ const onSubmit = form.handleSubmit(async (values) => {
         _serverError: result.error.message || "Login failed",
       });
     } else {
-      // Redirect to home page after successful login
-      await navigateTo("/");
+      await navigateTo(ROUTES.HOME);
     }
   } catch (err) {
     form.setErrors({

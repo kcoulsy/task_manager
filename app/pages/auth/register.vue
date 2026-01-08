@@ -7,6 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { ROUTES } from "~~/utils/routes";
+
+definePageMeta({
+  middleware: "require-no-auth",
+});
 
 const formSchema = toTypedSchema(
   z.object({
@@ -39,7 +44,7 @@ const onSubmit = form.handleSubmit(async (values) => {
         email: "",
         password: "",
       });
-      await navigateTo("/auth/login");
+      await navigateTo(ROUTES.AUTH.LOGIN);
     }
   } catch {
     form.setErrors({
