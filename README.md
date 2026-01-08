@@ -1,9 +1,9 @@
 # Task Manager
 
-This project is purely for learning purposes, to familiarise myself with Nuxt and Vue after so long. 
-
+This project is purely for learning purposes, to familiarise myself with Nuxt and Vue after so long.
 
 ## Feature Checklist
+
 - [ ] Auth (better auth)
 - [ ] Styling (tailwind)
 - [ ] UI Components (shadcn-vue)
@@ -11,7 +11,6 @@ This project is purely for learning purposes, to familiarise myself with Nuxt an
 - [ ] Tasks
 - [ ] Comments
 - [ ] Activity Log
-
 
 ## Setup
 

@@ -13,5 +13,5 @@ export default defineNuxtConfig({
     plugins: [tailwindcss()],
   },
 
-  modules: ["shadcn-nuxt"],
+  modules: ["shadcn-nuxt", "@nuxt/eslint"],
 });
