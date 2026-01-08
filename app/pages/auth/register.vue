@@ -58,7 +58,7 @@ const { isSubmitting } = form;
 </script>
 
 <template>
-  <div class="flex min-h-screen items-center justify-center px-4">
+  <div class="flex mt-20 justify-center px-4">
     <Card class="w-full max-w-md">
       <CardHeader class="space-y-1">
         <CardTitle class="text-2xl font-bold text-center">Register</CardTitle>
