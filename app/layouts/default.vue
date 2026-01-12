@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { authClient } from "../../utils/auth-client";
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "~~/utils/routes";
 
-// Server-side session check
-const { data: session } = await useFetch("/api/session");
+const session = authClient.useSession();
+
+const handleLogout = async () => {
+  await authClient.signOut();
+  await navigateTo(ROUTES.HOME);
+};
 </script>
 
 <template>
@@ -18,7 +23,7 @@ const { data: session } = await useFetch("/api/session");
           </div>
 
           <div class="flex items-center space-x-4">
-            <template v-if="!session?.user?.id">
+            <template v-if="!session.data?.user?.id">
               <NuxtLink to="/auth/login">
                 <Button variant="outline"> Login </Button>
               </NuxtLink>
@@ -28,8 +33,8 @@ const { data: session } = await useFetch("/api/session");
             </template>
 
             <template v-else>
-              <span class="text-gray-700 text-sm"> Welcome, {{ session?.user?.email }} </span>
-              <Button variant="outline" @click="authClient.signOut()"> Logout </Button>
+              <span class="text-gray-700 text-sm"> Welcome, {{ session.data?.user?.email }} </span>
+              <Button variant="outline" @click="handleLogout"> Logout </Button>
             </template>
           </div>
         </div>

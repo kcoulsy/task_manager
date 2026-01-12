@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useForm } from "vee-validate";
+import { useForm, configure } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import * as z from "zod";
 import { authClient } from "../../../utils/auth-client";
@@ -8,16 +8,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { ROUTES } from "~~/utils/routes";
+import { isValidPassword, PASSWORD_VALIDATION_MESSAGE } from "~~/utils/password-validation";
 
 definePageMeta({
   middleware: "require-no-auth",
 });
 
+configure({
+  validateOnBlur: false,
+  validateOnChange: false,
+  validateOnInput: false,
+  validateOnModelUpdate: false,
+});
+
 const formSchema = toTypedSchema(
   z.object({
-    name: z.string().min(2).max(50),
-    email: z.string().email(),
-    password: z.string().min(8),
+    name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name must be at most 50 characters"),
+    email: z.string().email("Please enter a valid email address"),
+    password: z
+      .string()
+      .min(1, "Password is required")
+      .refine(isValidPassword, {
+        message: PASSWORD_VALIDATION_MESSAGE,
+      }),
     _serverError: z.string().optional(),
   }),
 );

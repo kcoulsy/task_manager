@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useForm } from "vee-validate";
+import { useForm, configure } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 import * as z from "zod";
 import { authClient } from "../../../utils/auth-client";
@@ -21,6 +21,13 @@ const formSchema = toTypedSchema(
   }),
 );
 
+configure({
+  validateOnBlur: false,
+  validateOnChange: false,
+  validateOnInput: false,
+  validateOnModelUpdate: false,
+});
+
 const form = useForm({
   validationSchema: formSchema,
 });
@@ -38,7 +45,7 @@ const onSubmit = form.handleSubmit(async (values) => {
         _serverError: result.error.message || "Login failed",
       });
     } else {
-      await navigateTo(ROUTES.HOME);
+      await navigateTo(ROUTES.APP.DASHBOARD);
     }
   } catch (err) {
     form.setErrors({
