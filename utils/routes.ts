@@ -6,9 +6,12 @@ export const ROUTES = {
   },
   APP: {
     DASHBOARD: "/app/dashboard",
+    PROJECT: (id: string) => `/app/projects/${id}`,
   },
   API: {
     SESSION: "/api/session",
+    PROJECTS: "/api/projects",
+    PROJECT: (id: string) => `/api/projects/${id}`,
   },
 } as const;
 

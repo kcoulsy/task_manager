@@ -25,12 +25,9 @@ const formSchema = toTypedSchema(
   z.object({
     name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name must be at most 50 characters"),
     email: z.string().email("Please enter a valid email address"),
-    password: z
-      .string()
-      .min(1, "Password is required")
-      .refine(isValidPassword, {
-        message: PASSWORD_VALIDATION_MESSAGE,
-      }),
+    password: z.string().min(1, "Password is required").refine(isValidPassword, {
+      message: PASSWORD_VALIDATION_MESSAGE,
+    }),
     _serverError: z.string().optional(),
   }),
 );
