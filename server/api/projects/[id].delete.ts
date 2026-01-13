@@ -1,37 +1,22 @@
-import { getSession } from "../../utils/auth";
-import { prisma } from "~~/utils/db";
+import { requireAuth } from "../../utils/require-auth";
+import { deleteProject } from "../../services/project.service";
+import { handleServiceError } from "../../utils/errors";
+import { ERROR_MESSAGES, HTTP_STATUS } from "~~/utils/constants";
 
 export default defineEventHandler(async (event) => {
-  const session = await getSession(event);
-
-  if (!session?.user?.id) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: "Unauthorized",
-    });
-  }
-
+  const session = await requireAuth(event);
   const id = getRouterParam(event, "id");
 
-  const existingProject = await prisma.project.findFirst({
-    where: {
-      id,
-      userId: session.user.id,
-    },
-  });
-
-  if (!existingProject) {
+  if (!id) {
     throw createError({
-      statusCode: 404,
-      statusMessage: "Project not found",
+      statusCode: HTTP_STATUS.BAD_REQUEST,
+      statusMessage: ERROR_MESSAGES.PROJECT_ID_REQUIRED,
     });
   }
 
-  await prisma.project.delete({
-    where: {
-      id,
-    },
-  });
-
-  return { success: true };
+  try {
+    return await deleteProject(id, session.user.id);
+  } catch (error) {
+    handleServiceError(error);
+  }
 });

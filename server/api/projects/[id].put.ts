@@ -1,51 +1,26 @@
-import { getSession } from "../../utils/auth";
-import { prisma } from "~~/utils/db";
+import { requireAuth } from "../../utils/require-auth";
+import { readValidatedBody } from "../../utils/validate";
+import { UpdateProjectSchema } from "../../schemas/project.schema";
+import { updateProject } from "../../services/project.service";
+import { handleServiceError } from "../../utils/errors";
+import { ERROR_MESSAGES, HTTP_STATUS } from "~~/utils/constants";
 
 export default defineEventHandler(async (event) => {
-  const session = await getSession(event);
-  
-  if (!session?.user?.id) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: "Unauthorized",
-    });
-  }
-
+  const session = await requireAuth(event);
   const id = getRouterParam(event, "id");
-  const body = await readBody(event);
-  const { name, description } = body;
 
-  // Check if project exists and belongs to user
-  const existingProject = await prisma.project.findFirst({
-    where: {
-      id,
-      userId: session.user.id,
-    },
-  });
-
-  if (!existingProject) {
+  if (!id) {
     throw createError({
-      statusCode: 404,
-      statusMessage: "Project not found",
+      statusCode: HTTP_STATUS.BAD_REQUEST,
+      statusMessage: ERROR_MESSAGES.PROJECT_ID_REQUIRED,
     });
   }
 
-  if (!name || typeof name !== "string" || name.trim().length === 0) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: "Project name is required",
-    });
+  const body = await readValidatedBody(event, UpdateProjectSchema);
+
+  try {
+    return await updateProject(id, session.user.id, body);
+  } catch (error) {
+    handleServiceError(error);
   }
-
-  const project = await prisma.project.update({
-    where: {
-      id,
-    },
-    data: {
-      name: name.trim(),
-      description: description?.trim() || null,
-    },
-  });
-
-  return project;
 });

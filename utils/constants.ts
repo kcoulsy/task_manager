@@ -42,7 +42,14 @@ export const PRIORITY_COLORS: Record<Priority, string> = {
   URGENT: "bg-red-100 text-red-700",
 };
 
+export const ERROR_MESSAGES = {
+  PROJECT_ID_REQUIRED: "Project ID is required",
+  PROJECT_AND_TASK_ID_REQUIRED: "Project ID and Task ID are required",
+} as const;
+
 export const HTTP_STATUS = {
   BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
   NOT_FOUND: 404,
+  INTERNAL_SERVER_ERROR: 500,
 } as const;

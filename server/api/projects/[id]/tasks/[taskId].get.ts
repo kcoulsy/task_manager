@@ -1,62 +1,23 @@
-import { getSession } from "../../../../utils/auth";
-import { prisma } from "~~/utils/db";
+import { requireAuth } from "../../../../utils/require-auth";
+import { findTaskById } from "../../../../services/task.service";
+import { handleServiceError } from "../../../../utils/errors";
+import { ERROR_MESSAGES, HTTP_STATUS } from "~~/utils/constants";
 
 export default defineEventHandler(async (event) => {
-  const session = await getSession(event);
-
-  if (!session?.user?.id) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: "Unauthorized",
-    });
-  }
-
+  const session = await requireAuth(event);
   const projectId = getRouterParam(event, "id");
   const taskId = getRouterParam(event, "taskId");
 
   if (!projectId || !taskId) {
     throw createError({
-      statusCode: 400,
-      statusMessage: "Project ID and Task ID are required",
+      statusCode: HTTP_STATUS.BAD_REQUEST,
+      statusMessage: ERROR_MESSAGES.PROJECT_AND_TASK_ID_REQUIRED,
     });
   }
 
-  const project = await prisma.project.findFirst({
-    where: {
-      id: projectId,
-      userId: session.user.id,
-    },
-  });
-
-  if (!project) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: "Project not found",
-    });
+  try {
+    return await findTaskById(projectId, taskId, session.user.id);
+  } catch (error) {
+    handleServiceError(error);
   }
-
-  const task = await prisma.task.findFirst({
-    where: {
-      id: taskId,
-      projectId,
-      userId: session.user.id,
-    },
-    include: {
-      project: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-    },
-  });
-
-  if (!task) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: "Task not found",
-    });
-  }
-
-  return task;
 });

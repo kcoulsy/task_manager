@@ -11,10 +11,32 @@ export const ROUTES = {
   },
   API: {
     SESSION: "/api/session",
+    AUTH: {
+      BASE: "/api/auth",
+      LOGIN: "/api/auth/sign-in/email",
+      REGISTER: "/api/auth/sign-up/email",
+      SIGNOUT: "/api/auth/sign-out",
+      ALL: "/api/auth/[...all]",
+    },
     PROJECTS: "/api/projects",
     PROJECT: (id: string) => `/api/projects/${id}`,
     PROJECT_TASKS: (projectId: string) => `/api/projects/${projectId}/tasks`,
     TASK: (projectId: string, taskId: string) => `/api/projects/${projectId}/tasks/${taskId}`,
+    PROJECTS_DETAILED: {
+      BASE: "/api/projects",
+      LIST: "/api/projects",
+      CREATE: "/api/projects",
+      BY_ID: (id: string) => `/api/projects/${id}`,
+      UPDATE: (id: string) => `/api/projects/${id}`,
+      DELETE: (id: string) => `/api/projects/${id}`,
+    },
+    TASKS_DETAILED: {
+      LIST: (projectId: string) => `/api/projects/${projectId}/tasks`,
+      CREATE: (projectId: string) => `/api/projects/${projectId}/tasks`,
+      BY_ID: (projectId: string, taskId: string) => `/api/projects/${projectId}/tasks/${taskId}`,
+      UPDATE: (projectId: string, taskId: string) => `/api/projects/${projectId}/tasks/${taskId}`,
+      DELETE: (projectId: string, taskId: string) => `/api/projects/${projectId}/tasks/${taskId}`,
+    },
   },
 } as const;
 
