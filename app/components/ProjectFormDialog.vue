@@ -94,24 +94,30 @@ const handleClose = () => {
   <Dialog v-model:open="isOpen">
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>{{ isEditing ? "Edit Project" : "Create Project" }}</DialogTitle>
+        <DialogTitle class="font-display text-2xl text-editorial-navy">
+          {{ isEditing ? "Edit Project" : "Create Project" }}
+        </DialogTitle>
         <DialogDescription>
           {{ isEditing ? "Update your project details." : "Create a new project to organize your tasks." }}
         </DialogDescription>
       </DialogHeader>
       <div class="space-y-4 py-4">
         <FormItem>
-          <Label>Name</Label>
+          <Label class="text-xs font-mono uppercase tracking-wide text-slate-600">Name</Label>
           <Input v-model="formData.name" placeholder="Project name" required :disabled="isSubmitting" />
         </FormItem>
         <FormItem>
-          <Label>Description</Label>
+          <Label class="text-xs font-mono uppercase tracking-wide text-slate-600">Description</Label>
           <Input v-model="formData.description" placeholder="Project description (optional)" :disabled="isSubmitting" />
         </FormItem>
       </div>
       <DialogFooter>
         <Button variant="outline" :disabled="isSubmitting" @click="handleClose">Cancel</Button>
-        <Button :disabled="isSubmitting" @click="handleSubmit">
+        <Button
+          :disabled="isSubmitting"
+          @click="handleSubmit"
+          class="bg-editorial-accent hover:bg-editorial-accent/90 text-white"
+        >
           {{ isSubmitting ? "Saving..." : isEditing ? "Update" : "Create" }}
         </Button>
       </DialogFooter>

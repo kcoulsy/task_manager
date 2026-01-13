@@ -43,12 +43,17 @@ const handleClick = () => {
 </script>
 
 <template>
-  <Card class="cursor-pointer hover:shadow-md transition-shadow" @click="handleClick">
+  <Card
+    class="cursor-pointer bg-white rounded-lg border border-gray-200 shadow-lg hover:shadow-xl transition-all hover:scale-[1.01]"
+    @click="handleClick"
+  >
     <CardHeader>
       <div class="flex items-start justify-between">
         <div class="flex-1">
-          <CardTitle>{{ project.name }}</CardTitle>
-          <CardDescription v-if="project.description">{{ project.description }}</CardDescription>
+          <CardTitle class="font-display text-2xl text-editorial-navy">{{ project.name }}</CardTitle>
+          <CardDescription v-if="project.description" class="text-editorial-slate mt-2">
+            {{ project.description }}
+          </CardDescription>
         </div>
         <CardAction class="flex gap-2">
           <Button variant="ghost" size="sm" class="h-8 w-8 p-0" @click="handleEdit">
@@ -66,7 +71,9 @@ const handleClick = () => {
       </div>
     </CardHeader>
     <CardContent>
-      <p class="text-sm text-muted-foreground">Created {{ new Date(project.createdAt).toLocaleDateString() }}</p>
+      <p class="text-xs font-mono uppercase tracking-wide text-slate-500">
+        Created {{ new Date(project.createdAt).toLocaleDateString() }}
+      </p>
     </CardContent>
   </Card>
 </template>

@@ -42,27 +42,31 @@ const openCreateDialog = () => {
 </script>
 
 <template>
-  <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900 mb-2">Welcome back, {{ session?.user?.email }}!</h1>
-        <p class="text-gray-600">Manage your projects and tasks.</p>
+  <div class="min-h-screen bg-gradient-to-br from-indigo-50/30 via-slate-50 to-blue-50/20">
+    <div class="max-w-[1400px] mx-auto pb-8 px-6 space-y-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-display font-bold tracking-tight text-editorial-navy mb-2">
+            Welcome back, {{ session?.user?.email }}!
+          </h1>
+          <p class="text-editorial-slate">Manage your projects and tasks.</p>
+        </div>
+        <Button @click="openCreateDialog" class="bg-editorial-accent hover:bg-editorial-accent/90 text-white">
+          <Plus class="h-4 w-4 mr-2" />
+          New Project
+        </Button>
       </div>
-      <Button @click="openCreateDialog">
-        <Plus class="h-4 w-4 mr-2" />
-        New Project
-      </Button>
+
+      <ProjectsList
+        :projects="projects || []"
+        :is-loading="isLoading"
+        :on-refresh="refreshProjects"
+        :on-create="openCreateDialog"
+      />
+
+      <ClientOnly>
+        <ProjectFormDialog :on-refresh="refreshProjects" />
+      </ClientOnly>
     </div>
-
-    <ProjectsList
-      :projects="projects || []"
-      :is-loading="isLoading"
-      :on-refresh="refreshProjects"
-      :on-create="openCreateDialog"
-    />
-
-    <ClientOnly>
-      <ProjectFormDialog :on-refresh="refreshProjects" />
-    </ClientOnly>
   </div>
 </template>

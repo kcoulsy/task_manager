@@ -60,87 +60,95 @@ const handleTaskCreated = () => {
 
 <template>
   <div v-if="isLoading" class="flex items-center justify-center min-h-[400px]">
-    <p class="text-gray-500">Loading project...</p>
+    <p class="text-editorial-slate">Loading project...</p>
   </div>
 
-  <div v-else-if="project" class="space-y-6">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ project.name }}</h1>
-        <p v-if="project.description" class="text-gray-600">{{ project.description }}</p>
+  <div v-else-if="project" class="min-h-screen bg-gradient-to-br from-indigo-50/30 via-slate-50 to-blue-50/20">
+    <div class="max-w-[1400px] mx-auto pb-8 px-6 space-y-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-display font-bold tracking-tight text-editorial-navy mb-2">
+            {{ project.name }}
+          </h1>
+          <p v-if="project.description" class="text-editorial-slate">{{ project.description }}</p>
+        </div>
+        <Button variant="ghost" @click="navigateTo(ROUTES.APP.DASHBOARD)" class="text-editorial-slate hover:text-editorial-navy">
+          Back to Dashboard
+        </Button>
       </div>
-      <Button variant="outline" @click="navigateTo(ROUTES.APP.DASHBOARD)"> Back to Dashboard </Button>
-    </div>
 
-    <Card>
-      <CardHeader>
-        <div class="flex items-center justify-between">
-          <div>
-            <CardTitle>Tasks</CardTitle>
-            <CardDescription>
-              {{ tasks?.length || 0 }} {{ tasks?.length === 1 ? "task" : "tasks" }} in this project
-            </CardDescription>
+      <Card class="bg-white rounded-lg border border-gray-200 shadow-lg">
+        <CardHeader>
+          <div class="flex items-center justify-between">
+            <div>
+              <CardTitle class="font-display text-2xl text-editorial-navy">Tasks</CardTitle>
+              <CardDescription class="text-editorial-slate">
+                {{ tasks?.length || 0 }} {{ tasks?.length === 1 ? "task" : "tasks" }} in this project
+              </CardDescription>
+            </div>
+            <Button @click="openTaskDialog" class="bg-editorial-accent hover:bg-editorial-accent/90 text-white">
+              Create Task
+            </Button>
           </div>
-          <Button @click="openTaskDialog">Create Task</Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div v-if="!tasks || tasks.length === 0" class="text-center py-8 text-gray-500">
-          No tasks yet. Create your first task to get started!
-        </div>
-        <div v-else class="overflow-x-auto">
-          <table class="w-full border-collapse">
-            <thead>
-              <tr class="border-b">
-                <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700">Title</th>
-                <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700">Status</th>
-                <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700">Priority</th>
-                <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700">Due Date</th>
-                <th class="text-left py-3 px-4 font-semibold text-sm text-gray-700">Created</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="task in tasks"
-                :key="task.id"
-                class="border-b hover:bg-gray-50 transition-colors cursor-pointer"
-                @click="navigateTo(ROUTES.APP.TASK(projectId, task.id))"
-              >
-                <td class="py-3 px-4">
-                  <div class="font-medium text-gray-900">{{ task.title }}</div>
-                  <div v-if="task.description" class="text-sm text-gray-500 mt-1">
-                    {{ task.description }}
-                  </div>
-                </td>
-                <td class="py-3 px-4">
-                  <span
-                    class="inline-flex items-center gap-2 text-xs px-2 py-1 rounded font-medium"
-                    :class="getStatusColor(task.status)"
-                  >
-                    <span class="w-2 h-2 rounded-full" :class="getStatusCircleColor(task.status)"></span>
-                    {{ TASK_STATUS_LABELS[task.status] }}
-                  </span>
-                </td>
-                <td class="py-3 px-4">
-                  <span class="text-xs px-2 py-1 rounded font-medium" :class="getPriorityColor(task.priority)">
-                    {{ task.priority }}
-                  </span>
-                </td>
-                <td class="py-3 px-4 text-sm text-gray-600">
-                  {{ formatDate(task.dueDate) || "-" }}
-                </td>
-                <td class="py-3 px-4 text-sm text-gray-600">
-                  {{ formatDate(task.createdAt) }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </CardContent>
-    </Card>
+        </CardHeader>
+        <CardContent>
+          <div v-if="!tasks || tasks.length === 0" class="text-center py-8 text-editorial-slate">
+            No tasks yet. Create your first task to get started!
+          </div>
+          <div v-else class="overflow-x-auto">
+            <table class="w-full border-collapse">
+              <thead>
+                <tr class="border-b border-gray-200">
+                  <th class="text-left py-3 px-4 font-mono text-xs uppercase tracking-wide text-slate-600">Title</th>
+                  <th class="text-left py-3 px-4 font-mono text-xs uppercase tracking-wide text-slate-600">Status</th>
+                  <th class="text-left py-3 px-4 font-mono text-xs uppercase tracking-wide text-slate-600">Priority</th>
+                  <th class="text-left py-3 px-4 font-mono text-xs uppercase tracking-wide text-slate-600">Due Date</th>
+                  <th class="text-left py-3 px-4 font-mono text-xs uppercase tracking-wide text-slate-600">Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="task in tasks"
+                  :key="task.id"
+                  class="border-b border-gray-100 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                  @click="navigateTo(ROUTES.APP.TASK(projectId, task.id))"
+                >
+                  <td class="py-3 px-4">
+                    <div class="font-medium text-editorial-navy">{{ task.title }}</div>
+                    <div v-if="task.description" class="text-sm text-editorial-slate mt-1 truncate max-w-md">
+                      {{ task.description }}
+                    </div>
+                  </td>
+                  <td class="py-3 px-4">
+                    <span
+                      class="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-md font-medium"
+                      :class="getStatusColor(task.status)"
+                    >
+                      <span class="w-2 h-2 rounded-full" :class="getStatusCircleColor(task.status)"></span>
+                      {{ TASK_STATUS_LABELS[task.status] }}
+                    </span>
+                  </td>
+                  <td class="py-3 px-4">
+                    <span class="text-xs px-3 py-1.5 rounded-md font-medium" :class="getPriorityColor(task.priority)">
+                      {{ task.priority }}
+                    </span>
+                  </td>
+                  <td class="py-3 px-4 text-sm text-editorial-slate">
+                    {{ formatDate(task.dueDate) || "-" }}
+                  </td>
+                  <td class="py-3 px-4 text-sm text-editorial-slate">
+                    {{ formatDate(task.createdAt) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
 
-    <ClientOnly>
-      <TaskFormDialog :on-refresh="handleTaskCreated" />
-    </ClientOnly>
+      <ClientOnly>
+        <TaskFormDialog :on-refresh="handleTaskCreated" />
+      </ClientOnly>
+    </div>
   </div>
 </template>

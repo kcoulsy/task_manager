@@ -14,12 +14,12 @@ const props = defineProps<{
 
 <template>
   <div v-if="isLoading" class="text-center py-12">
-    <p class="text-gray-500">Loading projects...</p>
+    <p class="text-editorial-slate">Loading projects...</p>
   </div>
 
   <div v-else-if="projects.length === 0" class="text-center py-12">
-    <p class="text-gray-500 mb-4">No projects yet. Create your first project to get started!</p>
-    <Button @click="props.onCreate?.()">
+    <p class="text-editorial-slate mb-4">No projects yet. Create your first project to get started!</p>
+    <Button @click="props.onCreate?.()" class="bg-editorial-accent hover:bg-editorial-accent/90 text-white">
       <Plus class="h-4 w-4 mr-2" />
       Create Project
     </Button>
