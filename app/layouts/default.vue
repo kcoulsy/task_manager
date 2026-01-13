@@ -9,6 +9,10 @@ const handleLogout = async () => {
   await authClient.signOut();
   await navigateTo(ROUTES.HOME);
 };
+
+const logoLink = computed(() => {
+  return session.value?.data?.user?.id ? ROUTES.APP.DASHBOARD : ROUTES.HOME;
+});
 </script>
 
 <template>
@@ -18,7 +22,9 @@ const handleLogout = async () => {
         <div class="flex justify-between h-16">
           <div class="flex items-center">
             <div class="shrink-0 flex items-center">
-              <span class="ml-2 text-xl font-semibold text-gray-900">Task Manager</span>
+              <NuxtLink :to="logoLink">
+                <span class="ml-2 text-xl font-semibold text-gray-900">Task Manager</span>
+              </NuxtLink>
             </div>
           </div>
 
