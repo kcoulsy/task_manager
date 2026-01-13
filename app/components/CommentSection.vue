@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
+import { useQuery } from "@tanstack/vue-query";
 import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import CommentItem from "./CommentItem.vue";
 import { ROUTES } from "~~/utils/routes";
-import { authClient } from "~~/utils/auth-client";
 import type { Comment } from "~/types/comment";
 import { FIVE_MINUTES } from "~~/utils/constants";
+import { useCreateComment } from "~/composables/useCreateComment";
 
 const props = withDefaults(
   defineProps<{
@@ -23,9 +23,7 @@ const props = withDefaults(
 
 const sortOrder = ref<"asc" | "desc">("desc");
 const newComment = ref("");
-const queryClient = useQueryClient();
-const session = authClient.useSession();
-const queryKey = ["comments", props.projectId, props.taskId, sortOrder.value];
+const queryKey = computed(() => ["comments", props.projectId, props.taskId, sortOrder.value]);
 
 const { data: comments, isLoading } = useQuery({
   queryKey,
@@ -40,70 +38,7 @@ const { data: comments, isLoading } = useQuery({
   staleTime: FIVE_MINUTES,
 });
 
-const createCommentMutation = useMutation({
-  mutationFn: async (content: string) => {
-    const response = await $fetch<Comment>(ROUTES.API.TASK_COMMENTS(props.projectId, props.taskId), {
-      method: "POST",
-      body: { content },
-      credentials: "include",
-    });
-
-    return response;
-  },
-  onMutate: async (content) => {
-    await queryClient.cancelQueries({
-      queryKey,
-    });
-
-    const previousComments = queryClient.getQueryData<Comment[]>(queryKey);
-
-    const userId = session.value?.data?.user?.id || "";
-    const userEmail = session.value?.data?.user?.email || "";
-    const userName = session.value?.data?.user?.name || userEmail.split("@")[0] || "User";
-
-    const optimisticComment: Comment = {
-      id: `temp-${Date.now()}`,
-      content: content.trim(),
-      createdAt: new Date(),
-      user: {
-        id: userId,
-        name: userName,
-        email: userEmail,
-      },
-      reactions: [],
-      updatedAt: new Date(),
-      taskId: props.taskId,
-      userId: userId,
-      parentId: null,
-      replies: [],
-    };
-
-    queryClient.setQueryData<Comment[]>(queryKey, (old = []) => {
-      const newComments = [...old, optimisticComment];
-
-      return newComments.sort((a, b) => {
-        const dateA = new Date(a.createdAt).getTime();
-        const dateB = new Date(b.createdAt).getTime();
-        return sortOrder.value === "desc" ? dateB - dateA : dateA - dateB;
-      });
-    });
-
-    return { previousComments };
-  },
-  onError: (_err, _variables, context) => {
-    if (context?.previousComments) {
-      queryClient.setQueryData(queryKey, context.previousComments);
-    }
-    alert("Failed to create comment");
-  },
-  onSuccess: () => {
-    setTimeout(() => {
-      queryClient.invalidateQueries({
-        queryKey,
-      });
-    }, 1000);
-  },
-});
+const { createComment, isPending } = useCreateComment(props.projectId, props.taskId, sortOrder);
 
 const handleSubmit = async () => {
   if (!newComment.value.trim()) return;
@@ -112,7 +47,7 @@ const handleSubmit = async () => {
   newComment.value = "";
 
   try {
-    await createCommentMutation.mutateAsync(content);
+    await createComment(content);
   } catch (error) {
     console.error("Failed to create comment:", error);
   }
@@ -147,8 +82,8 @@ const commentsList = computed(() => comments.value || []);
           @keydown.meta.enter="handleSubmit"
         />
         <div class="flex justify-end">
-          <Button :disabled="!newComment.trim() || createCommentMutation.isPending.value" @click="handleSubmit">
-            {{ createCommentMutation.isPending.value ? "Posting..." : "Post Comment" }}
+          <Button :disabled="!newComment.trim() || isPending" @click="handleSubmit">
+            {{ isPending ? "Posting..." : "Post Comment" }}
           </Button>
         </div>
       </div>
