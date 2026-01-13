@@ -1,9 +1,16 @@
 <script setup lang="ts">
-import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
+import { computed } from "vue";
+import { useQuery } from "@tanstack/vue-query";
+import { Card, CardHeader, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import CommentSection from "~/components/CommentSection.vue";
+import EditableTitle from "~/components/EditableTitle.vue";
+import EditableDescription from "~/components/EditableDescription.vue";
+import EditableStatus from "~/components/EditableStatus.vue";
+import EditablePriority from "~/components/EditablePriority.vue";
+import EditableDueDate from "~/components/EditableDueDate.vue";
 import { ROUTES } from "~~/utils/routes";
-import { HTTP_STATUS } from "~~/utils/constants";
+import { HTTP_STATUS, FIVE_MINUTES } from "~~/utils/constants";
 import { useTaskHelpers } from "~/composables/useTaskHelpers";
 import type { Task, Project } from "~~/generated/prisma/client";
 import type { Comment } from "~/types/comment";
@@ -12,8 +19,7 @@ const route = useRoute();
 const projectId = route.params.id as string;
 const taskId = route.params.taskId as string;
 
-const { getStatusColor, getStatusCircleColor, getPriorityColor, formatDate, TASK_STATUS_LABELS, PRIORITY_LABELS } =
-  useTaskHelpers();
+const { formatDate } = useTaskHelpers();
 
 if (!projectId || !taskId) {
   throw createError({
@@ -26,7 +32,7 @@ definePageMeta({
   middleware: "require-auth",
 });
 
-const { data: task, pending: isLoading } = await useFetch<Task & { project: Pick<Project, "id" | "name"> }>(
+const { data: initialTask } = await useFetch<Task & { project: Pick<Project, "id" | "name"> }>(
   ROUTES.API.TASK(projectId, taskId),
   {
     server: true,
@@ -40,6 +46,19 @@ const { data: task, pending: isLoading } = await useFetch<Task & { project: Pick
     },
   },
 );
+
+const queryKey = computed(() => ["task", projectId, taskId]);
+const { data: task, isLoading } = useQuery({
+  queryKey,
+  queryFn: async () => {
+    const data = await $fetch<Task & { project: Pick<Project, "id" | "name"> }>(ROUTES.API.TASK(projectId, taskId), {
+      credentials: "include",
+    });
+    return data;
+  },
+  initialData: () => initialTask.value,
+  staleTime: FIVE_MINUTES,
+});
 
 const { data: initialComments } = await useFetch<Comment[]>(ROUTES.API.TASK_COMMENTS(projectId, taskId), {
   server: true,
@@ -88,37 +107,17 @@ useHead(
 
     <Card>
       <CardHeader>
-        <CardTitle class="text-2xl">{{ task.title }}</CardTitle>
+        <EditableTitle :title="task.title" :project-id="projectId" :task-id="taskId" />
       </CardHeader>
       <CardContent class="space-y-4">
-        <div v-if="task.description">
-          <h3 class="font-semibold text-sm text-gray-700 mb-2">Description</h3>
-          <p class="text-gray-600 whitespace-pre-wrap">{{ task.description }}</p>
-        </div>
+        <EditableDescription :description="task.description" :project-id="projectId" :task-id="taskId" />
 
         <div class="grid grid-cols-2 gap-4">
-          <div>
-            <h3 class="font-semibold text-sm text-gray-700 mb-2">Status</h3>
-            <span
-              class="inline-flex items-center gap-2 text-sm px-3 py-1 rounded font-medium"
-              :class="getStatusColor(task.status)"
-            >
-              <span class="w-2 h-2 rounded-full" :class="getStatusCircleColor(task.status)"></span>
-              {{ TASK_STATUS_LABELS[task.status] }}
-            </span>
-          </div>
+          <EditableStatus :status="task.status" :project-id="projectId" :task-id="taskId" />
 
-          <div>
-            <h3 class="font-semibold text-sm text-gray-700 mb-2">Priority</h3>
-            <span class="inline-block text-sm px-3 py-1 rounded font-medium" :class="getPriorityColor(task.priority)">
-              {{ PRIORITY_LABELS[task.priority] }}
-            </span>
-          </div>
+          <EditablePriority :priority="task.priority" :project-id="projectId" :task-id="taskId" />
 
-          <div>
-            <h3 class="font-semibold text-sm text-gray-700 mb-2">Due Date</h3>
-            <p class="text-gray-600">{{ formatDetailDate(task.dueDate) }}</p>
-          </div>
+          <EditableDueDate :due-date="task.dueDate" :project-id="projectId" :task-id="taskId" />
 
           <div>
             <h3 class="font-semibold text-sm text-gray-700 mb-2">Created</h3>
