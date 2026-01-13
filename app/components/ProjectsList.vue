@@ -7,7 +7,6 @@ import type { Project } from "~~/generated/prisma/client";
 const props = defineProps<{
   projects: Project[];
   isLoading?: boolean;
-  onEdit?: (project: Project) => void;
   onRefresh?: () => void;
   onCreate?: () => void;
 }>();
@@ -31,7 +30,6 @@ const props = defineProps<{
       v-for="project in projects"
       :key="project.id"
       :project="project"
-      :on-edit="onEdit"
       :on-refresh="onRefresh"
     />
   </div>

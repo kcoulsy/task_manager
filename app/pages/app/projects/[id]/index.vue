@@ -1,13 +1,19 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import TaskFormDialog from "@/components/TaskFormDialog.vue";
 import { ROUTES } from "~~/utils/routes";
+import { useDialogStore } from "@/stores/dialogStore";
+import { useTaskHelpers } from "@/composables/useTaskHelpers";
 import type { Project, Task } from "~~/generated/prisma/client";
 
 const route = useRoute();
 const projectId = route.params.id as string;
+
+const { getStatusColor, getPriorityColor, formatDate } = useTaskHelpers();
+
+// Must call composables BEFORE any await statements
+const dialogStore = useDialogStore();
 
 definePageMeta({
   middleware: "require-auth",
@@ -29,45 +35,12 @@ const { data: tasks, refresh: refreshTasks } = await useFetch<Task[]>(ROUTES.API
   server: true,
 });
 
-const isTaskDialogOpen = ref(false);
+const openTaskDialog = () => {
+  dialogStore.openCreateTaskDialog(projectId);
+};
 
 const handleTaskCreated = () => {
   refreshTasks();
-};
-
-const formatDate = (date: string | Date | null | undefined) => {
-  if (!date) return "-";
-  return new Date(date).toLocaleDateString();
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "TODO":
-      return "bg-gray-100 text-gray-700";
-    case "IN_PROGRESS":
-      return "bg-blue-100 text-blue-700";
-    case "DONE":
-      return "bg-green-100 text-green-700";
-    case "CANCELLED":
-      return "bg-red-100 text-red-700";
-    default:
-      return "bg-gray-100 text-gray-700";
-  }
-};
-
-const getPriorityColor = (priority: string) => {
-  switch (priority) {
-    case "LOW":
-      return "bg-gray-100 text-gray-700";
-    case "MEDIUM":
-      return "bg-yellow-100 text-yellow-700";
-    case "HIGH":
-      return "bg-orange-100 text-orange-700";
-    case "URGENT":
-      return "bg-red-100 text-red-700";
-    default:
-      return "bg-gray-100 text-gray-700";
-  }
 };
 </script>
 
@@ -82,7 +55,7 @@ const getPriorityColor = (priority: string) => {
         <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ project.name }}</h1>
         <p v-if="project.description" class="text-gray-600">{{ project.description }}</p>
       </div>
-      <Button variant="outline" @click="navigateTo('/app/dashboard')"> Back to Dashboard </Button>
+      <Button variant="outline" @click="navigateTo(ROUTES.APP.DASHBOARD)"> Back to Dashboard </Button>
     </div>
 
     <Card>
@@ -94,7 +67,7 @@ const getPriorityColor = (priority: string) => {
               {{ tasks?.length || 0 }} {{ tasks?.length === 1 ? "task" : "tasks" }} in this project
             </CardDescription>
           </div>
-          <Button @click="isTaskDialogOpen = true">Create Task</Button>
+          <Button @click="openTaskDialog">Create Task</Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -136,7 +109,7 @@ const getPriorityColor = (priority: string) => {
                   </span>
                 </td>
                 <td class="py-3 px-4 text-sm text-gray-600">
-                  {{ formatDate(task.dueDate) }}
+                  {{ formatDate(task.dueDate) || "-" }}
                 </td>
                 <td class="py-3 px-4 text-sm text-gray-600">
                   {{ formatDate(task.createdAt) }}
@@ -148,6 +121,8 @@ const getPriorityColor = (priority: string) => {
       </CardContent>
     </Card>
 
-    <TaskFormDialog v-model:open="isTaskDialogOpen" :project-id="projectId" :on-refresh="handleTaskCreated" />
+    <ClientOnly>
+      <TaskFormDialog :on-refresh="handleTaskCreated" />
+    </ClientOnly>
   </div>
 </template>

@@ -13,74 +13,56 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "~~/utils/routes";
-import type { Project } from "~~/generated/prisma/client";
+import { useDialogStore } from "@/stores/dialogStore";
 
-const props = withDefaults(
-  defineProps<{
-    open?: boolean;
-    project?: Project | null;
-    onRefresh?: () => void;
-  }>(),
-  {
-    open: false,
-    project: null,
-    onRefresh: undefined,
-  },
-);
-
-const emits = defineEmits<{
-  "update:open": [value: boolean];
+const props = defineProps<{
+  onRefresh?: () => void;
 }>();
+
+const store = useDialogStore();
 
 const formData = ref({
   name: "",
   description: "",
 });
 
-watch(
-  () => props.project,
-  (project) => {
-    if (project) {
-      formData.value = {
-        name: project.name,
-        description: project.description || "",
-      };
-    } else {
-      formData.value = { name: "", description: "" };
-    }
-  },
-  { immediate: true },
-);
+const isSubmitting = ref(false);
 
 watch(
-  () => props.open,
+  () => store.isProjectDialogOpen,
   (isOpen) => {
-    if (!isOpen) {
-      formData.value = { name: "", description: "" };
-    } else if (props.project) {
+    if (isOpen && store.editingProject) {
       formData.value = {
-        name: props.project.name,
-        description: props.project.description || "",
+        name: store.editingProject.name,
+        description: store.editingProject.description || "",
       };
+    } else if (!isOpen) {
+      formData.value = { name: "", description: "" };
     }
   },
 );
 
 const isOpen = computed({
-  get: () => props.open,
+  get: () => store.isProjectDialogOpen,
   set: (value: boolean) => {
-    emits("update:open", value);
+    if (!value) {
+      store.closeProjectDialog();
+    }
   },
 });
 
+const isEditing = computed(() => store.editingProject !== null);
+
 const handleSubmit = async () => {
-  if (!formData.value.name.trim()) {
+  if (!formData.value.name.trim() || isSubmitting.value) {
     return;
   }
 
+  isSubmitting.value = true;
+
   try {
-    if (props.project) {
-      await $fetch(ROUTES.API.PROJECT(props.project.id), {
+    if (store.editingProject) {
+      await $fetch(ROUTES.API.PROJECT(store.editingProject.id), {
         method: "PUT",
         body: formData.value,
       });
@@ -90,16 +72,18 @@ const handleSubmit = async () => {
         body: formData.value,
       });
     }
-    isOpen.value = false;
+    store.closeProjectDialog();
     props.onRefresh?.();
   } catch (error) {
     console.error("Failed to save project:", error);
     alert("Failed to save project");
+  } finally {
+    isSubmitting.value = false;
   }
 };
 
 const handleClose = () => {
-  isOpen.value = false;
+  store.closeProjectDialog();
 };
 </script>
 
@@ -107,24 +91,26 @@ const handleClose = () => {
   <Dialog v-model:open="isOpen">
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>{{ project ? "Edit Project" : "Create Project" }}</DialogTitle>
+        <DialogTitle>{{ isEditing ? "Edit Project" : "Create Project" }}</DialogTitle>
         <DialogDescription>
-          {{ project ? "Update your project details." : "Create a new project to organize your tasks." }}
+          {{ isEditing ? "Update your project details." : "Create a new project to organize your tasks." }}
         </DialogDescription>
       </DialogHeader>
       <div class="space-y-4 py-4">
         <FormItem>
           <Label>Name</Label>
-          <Input v-model="formData.name" placeholder="Project name" required />
+          <Input v-model="formData.name" placeholder="Project name" required :disabled="isSubmitting" />
         </FormItem>
         <FormItem>
           <Label>Description</Label>
-          <Input v-model="formData.description" placeholder="Project description (optional)" />
+          <Input v-model="formData.description" placeholder="Project description (optional)" :disabled="isSubmitting" />
         </FormItem>
       </div>
       <DialogFooter>
-        <Button variant="outline" @click="handleClose">Cancel</Button>
-        <Button @click="handleSubmit">{{ project ? "Update" : "Create" }}</Button>
+        <Button variant="outline" :disabled="isSubmitting" @click="handleClose">Cancel</Button>
+        <Button :disabled="isSubmitting" @click="handleSubmit">
+          {{ isSubmitting ? "Saving..." : isEditing ? "Update" : "Create" }}
+        </Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>

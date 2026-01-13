@@ -2,15 +2,19 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "~~/utils/routes";
+import { HTTP_STATUS } from "~~/utils/constants";
+import { useTaskHelpers } from "@/composables/useTaskHelpers";
 import type { Task, Project } from "~~/generated/prisma/client";
 
 const route = useRoute();
 const projectId = route.params.id as string;
 const taskId = route.params.taskId as string;
 
+const { getStatusColor, getPriorityColor, formatDate, TASK_STATUS_LABELS, PRIORITY_LABELS } = useTaskHelpers();
+
 if (!projectId || !taskId) {
   throw createError({
-    statusCode: 400,
+    statusCode: HTTP_STATUS.BAD_REQUEST,
     statusMessage: "Project ID and Task ID are required",
   });
 }
@@ -24,9 +28,9 @@ const { data: task, pending: isLoading } = await useFetch<Task & { project: Pick
   {
     server: true,
     onResponseError({ response }) {
-      if (response.status === 404) {
+      if (response.status === HTTP_STATUS.NOT_FOUND) {
         throw createError({
-          statusCode: 404,
+          statusCode: HTTP_STATUS.NOT_FOUND,
           statusMessage: "Task not found",
         });
       }
@@ -34,43 +38,12 @@ const { data: task, pending: isLoading } = await useFetch<Task & { project: Pick
   },
 );
 
-const formatDate = (date: string | Date | null | undefined) => {
-  if (!date) return "Not set";
-  return new Date(date).toLocaleDateString("en-US", {
+const formatDetailDate = (date: string | Date | null | undefined) => {
+  return formatDate(date, {
     year: "numeric",
     month: "long",
     day: "numeric",
-  });
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "TODO":
-      return "bg-gray-100 text-gray-700";
-    case "IN_PROGRESS":
-      return "bg-blue-100 text-blue-700";
-    case "DONE":
-      return "bg-green-100 text-green-700";
-    case "CANCELLED":
-      return "bg-red-100 text-red-700";
-    default:
-      return "bg-gray-100 text-gray-700";
-  }
-};
-
-const getPriorityColor = (priority: string) => {
-  switch (priority) {
-    case "LOW":
-      return "bg-gray-100 text-gray-700";
-    case "MEDIUM":
-      return "bg-yellow-100 text-yellow-700";
-    case "HIGH":
-      return "bg-orange-100 text-orange-700";
-    case "URGENT":
-      return "bg-red-100 text-red-700";
-    default:
-      return "bg-gray-100 text-gray-700";
-  }
+  }) || "Not set";
 };
 </script>
 
@@ -100,25 +73,25 @@ const getPriorityColor = (priority: string) => {
           <div>
             <h3 class="font-semibold text-sm text-gray-700 mb-2">Status</h3>
             <span class="inline-block text-sm px-3 py-1 rounded font-medium" :class="getStatusColor(task.status)">
-              {{ task.status.replace("_", " ") }}
+              {{ TASK_STATUS_LABELS[task.status] }}
             </span>
           </div>
 
           <div>
             <h3 class="font-semibold text-sm text-gray-700 mb-2">Priority</h3>
             <span class="inline-block text-sm px-3 py-1 rounded font-medium" :class="getPriorityColor(task.priority)">
-              {{ task.priority }}
+              {{ PRIORITY_LABELS[task.priority] }}
             </span>
           </div>
 
           <div>
             <h3 class="font-semibold text-sm text-gray-700 mb-2">Due Date</h3>
-            <p class="text-gray-600">{{ formatDate(task.dueDate) }}</p>
+            <p class="text-gray-600">{{ formatDetailDate(task.dueDate) }}</p>
           </div>
 
           <div>
             <h3 class="font-semibold text-sm text-gray-700 mb-2">Created</h3>
-            <p class="text-gray-600">{{ formatDate(task.createdAt) }}</p>
+            <p class="text-gray-600">{{ formatDetailDate(task.createdAt) }}</p>
           </div>
         </div>
 

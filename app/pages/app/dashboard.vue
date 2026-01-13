@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-vue-next";
 import ProjectsList from "@/components/ProjectsList.vue";
 import ProjectFormDialog from "@/components/ProjectFormDialog.vue";
 import { ROUTES } from "~~/utils/routes";
+import { useDialogStore } from "@/stores/dialogStore";
 import type { Project } from "~~/generated/prisma/client";
-
-const isDialogOpen = ref(false);
-const editingProject = ref<Project | null>(null);
 
 definePageMeta({
   middleware: "require-auth",
 });
+
+// Must call composables BEFORE any await statements
+const dialogStore = useDialogStore();
 
 const { data: session } = await useFetch("/api/session", {
   server: true,
@@ -27,13 +27,7 @@ const {
 });
 
 const openCreateDialog = () => {
-  editingProject.value = null;
-  isDialogOpen.value = true;
-};
-
-const openEditDialog = (project: Project) => {
-  editingProject.value = project;
-  isDialogOpen.value = true;
+  dialogStore.openCreateProjectDialog();
 };
 </script>
 
@@ -53,11 +47,12 @@ const openEditDialog = (project: Project) => {
     <ProjectsList
       :projects="projects || []"
       :is-loading="isLoading"
-      :on-edit="openEditDialog"
       :on-refresh="refreshProjects"
       :on-create="openCreateDialog"
     />
 
-    <ProjectFormDialog v-model:open="isDialogOpen" :project="editingProject" :on-refresh="refreshProjects" />
+    <ClientOnly>
+      <ProjectFormDialog :on-refresh="refreshProjects" />
+    </ClientOnly>
   </div>
 </template>

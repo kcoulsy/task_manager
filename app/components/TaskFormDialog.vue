@@ -8,119 +8,72 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FormItem } from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "~~/utils/routes";
+import { useDialogStore } from "@/stores/dialogStore";
+import { useTaskHelpers } from "@/composables/useTaskHelpers";
 import type { TaskStatus, Priority } from "~~/generated/prisma/enums";
-import type { Task } from "~~/generated/prisma/client";
 
-const props = withDefaults(
-  defineProps<{
-    open?: boolean;
-    projectId: string;
-    task?: Task | null;
-    onRefresh?: () => void;
-  }>(),
-  {
-    open: false,
-    task: null,
-    onRefresh: undefined,
-  },
-);
-
-const emits = defineEmits<{
-  "update:open": [value: boolean];
+const props = defineProps<{
+  onRefresh?: () => void;
 }>();
 
-const formData = ref<{
-  title: string;
-  description: string;
-  status: TaskStatus;
-  priority: Priority;
-  dueDate: string;
-}>({
+const store = useDialogStore();
+const { formatDateForInput, TASK_STATUS, PRIORITY, TASK_STATUS_LABELS, PRIORITY_LABELS } = useTaskHelpers();
+
+const getDefaultFormData = () => ({
   title: "",
   description: "",
-  status: "TODO",
-  priority: "MEDIUM",
+  status: TASK_STATUS.TODO as TaskStatus,
+  priority: PRIORITY.MEDIUM as Priority,
   dueDate: "",
 });
 
-watch(
-  () => props.task,
-  (task) => {
-    if (task) {
-      const dueDateStr: string = task.dueDate
-        ? (new Date(task.dueDate as string | Date).toISOString().split("T")[0] ?? "")
-        : "";
-      formData.value = {
-        title: task.title,
-        description: task.description ?? "",
-        status: task.status,
-        priority: task.priority,
-        dueDate: dueDateStr,
-      };
-    } else {
-      formData.value = {
-        title: "",
-        description: "",
-        status: "TODO",
-        priority: "MEDIUM",
-        dueDate: "",
-      };
-    }
-  },
-  { immediate: true },
-);
+const formData = ref(getDefaultFormData());
+const isSubmitting = ref(false);
 
+// Watch for dialog open state changes to populate/reset form
 watch(
-  () => props.open,
+  () => store.isTaskDialogOpen,
   (isOpen) => {
-    if (!isOpen) {
+    if (isOpen && store.editingTask) {
       formData.value = {
-        title: "",
-        description: "",
-        status: "TODO",
-        priority: "MEDIUM",
-        dueDate: "",
+        title: store.editingTask.title,
+        description: store.editingTask.description ?? "",
+        status: store.editingTask.status,
+        priority: store.editingTask.priority,
+        dueDate: formatDateForInput(store.editingTask.dueDate),
       };
-    } else if (props.task) {
-      let dueDateStr = "";
-      if (props.task.dueDate) {
-        const date = new Date(props.task.dueDate as string | Date);
-        const isoString = date.toISOString();
-        const datePart = isoString.split("T")[0];
-        if (datePart) {
-          dueDateStr = datePart;
-        }
-      }
-      formData.value = {
-        title: props.task.title,
-        description: props.task.description ?? "",
-        status: props.task.status,
-        priority: props.task.priority,
-        dueDate: dueDateStr,
-      };
+    } else if (!isOpen) {
+      formData.value = getDefaultFormData();
     }
   },
 );
 
 const isOpen = computed({
-  get: () => props.open,
+  get: () => store.isTaskDialogOpen,
   set: (value: boolean) => {
-    emits("update:open", value);
+    if (!value) {
+      store.closeTaskDialog();
+    }
   },
 });
 
+const isEditing = computed(() => store.editingTask !== null);
+
 const handleSubmit = async () => {
-  if (!formData.value.title.trim()) {
+  if (!formData.value.title.trim() || isSubmitting.value || !store.taskDialogProjectId) {
     return;
   }
 
+  isSubmitting.value = true;
+
   try {
-    await $fetch(ROUTES.API.PROJECT_TASKS(props.projectId), {
+    await $fetch(ROUTES.API.PROJECT_TASKS(store.taskDialogProjectId), {
       method: "POST",
       body: {
         title: formData.value.title,
@@ -130,16 +83,18 @@ const handleSubmit = async () => {
         dueDate: formData.value.dueDate || null,
       },
     });
-    isOpen.value = false;
+    store.closeTaskDialog();
     props.onRefresh?.();
   } catch (error) {
     console.error("Failed to create task:", error);
     alert("Failed to create task");
+  } finally {
+    isSubmitting.value = false;
   }
 };
 
 const handleClose = () => {
-  isOpen.value = false;
+  store.closeTaskDialog();
 };
 </script>
 
@@ -147,50 +102,56 @@ const handleClose = () => {
   <Dialog v-model:open="isOpen">
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Create Task</DialogTitle>
-        <DialogDescription> Add a new task to this project. </DialogDescription>
+        <DialogTitle>{{ isEditing ? "Edit Task" : "Create Task" }}</DialogTitle>
+        <DialogDescription>
+          {{ isEditing ? "Update your task details." : "Add a new task to this project." }}
+        </DialogDescription>
       </DialogHeader>
       <div class="space-y-4 py-4">
         <FormItem>
           <Label>Title</Label>
-          <Input v-model="formData.title" placeholder="Task title" required />
+          <Input v-model="formData.title" placeholder="Task title" required :disabled="isSubmitting" />
         </FormItem>
         <FormItem>
           <Label>Description</Label>
-          <Input v-model="formData.description" placeholder="Task description (optional)" />
+          <Input v-model="formData.description" placeholder="Task description (optional)" :disabled="isSubmitting" />
         </FormItem>
         <FormItem>
           <Label>Status</Label>
-          <select
-            v-model="formData.status"
-            class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
-          >
-            <option value="TODO">Todo</option>
-            <option value="IN_PROGRESS">In Progress</option>
-            <option value="DONE">Done</option>
-            <option value="CANCELLED">Cancelled</option>
-          </select>
+          <Select v-model="formData.status" :disabled="isSubmitting">
+            <SelectTrigger class="w-full">
+              <SelectValue placeholder="Select status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="(label, value) in TASK_STATUS_LABELS" :key="value" :value="value">
+                {{ label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </FormItem>
         <FormItem>
           <Label>Priority</Label>
-          <select
-            v-model="formData.priority"
-            class="h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] md:text-sm"
-          >
-            <option value="LOW">Low</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="HIGH">High</option>
-            <option value="URGENT">Urgent</option>
-          </select>
+          <Select v-model="formData.priority" :disabled="isSubmitting">
+            <SelectTrigger class="w-full">
+              <SelectValue placeholder="Select priority" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem v-for="(label, value) in PRIORITY_LABELS" :key="value" :value="value">
+                {{ label }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </FormItem>
         <FormItem>
           <Label>Due Date</Label>
-          <Input v-model="formData.dueDate" type="date" />
+          <Input v-model="formData.dueDate" type="date" :disabled="isSubmitting" />
         </FormItem>
       </div>
       <DialogFooter>
-        <Button variant="outline" @click="handleClose">Cancel</Button>
-        <Button @click="handleSubmit">Create</Button>
+        <Button variant="outline" :disabled="isSubmitting" @click="handleClose">Cancel</Button>
+        <Button :disabled="isSubmitting" @click="handleSubmit">
+          {{ isSubmitting ? "Saving..." : isEditing ? "Update" : "Create" }}
+        </Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>

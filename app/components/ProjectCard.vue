@@ -3,17 +3,19 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardAction }
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-vue-next";
 import { ROUTES } from "~~/utils/routes";
+import { useDialogStore } from "@/stores/dialogStore";
 import type { Project } from "~~/generated/prisma/client";
 
 const props = defineProps<{
   project: Project;
-  onEdit?: (project: Project) => void;
   onRefresh?: () => void;
 }>();
 
+const dialogStore = useDialogStore();
+
 const handleEdit = (event: Event) => {
   event.stopPropagation();
-  props.onEdit?.(props.project);
+  dialogStore.openEditProjectDialog(props.project);
 };
 
 const handleDelete = async (event: Event) => {
