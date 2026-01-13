@@ -109,6 +109,11 @@ const handleReaction = async (emoji: string) => {
     console.error("Failed to toggle reaction:", error);
   }
 };
+
+const hasUserReacted = (emoji: string): boolean => {
+  const reaction = props.comment.reactions.find((r) => r.emoji === emoji);
+  return reaction?.userReacted ?? false;
+};
 </script>
 
 <template>
@@ -146,7 +151,8 @@ const handleReaction = async (emoji: string) => {
                 <button
                   v-for="emoji in EMOJI_REACTION_OPTIONS"
                   :key="emoji"
-                  class="text-xl hover:scale-125 transition-transform p-1 rounded hover:bg-gray-100"
+                  class="text-xl hover:scale-125 transition-all p-1 rounded"
+                  :class="hasUserReacted(emoji) ? 'bg-blue-50 hover:bg-blue-100' : 'hover:bg-gray-100'"
                   @click="handleReaction(emoji)"
                 >
                   {{ emoji }}
