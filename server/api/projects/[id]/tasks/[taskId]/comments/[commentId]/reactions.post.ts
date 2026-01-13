@@ -3,10 +3,12 @@ import { readValidatedBody } from "~~/server/utils/validate";
 import { toggleReaction } from "~~/server/services/reaction.service";
 import { handleServiceError } from "~~/server/utils/errors";
 import { z } from "zod";
-import { HTTP_STATUS } from "~~/utils/constants";
+import { HTTP_STATUS, EMOJI_REACTION_OPTIONS } from "~~/utils/constants";
 
 const ReactionSchema = z.object({
-  emoji: z.string().min(1, "Emoji is required"),
+  emoji: z.string().refine((val) => EMOJI_REACTION_OPTIONS.includes(val as (typeof EMOJI_REACTION_OPTIONS)[number]), {
+    message: `Emoji must be one of: ${EMOJI_REACTION_OPTIONS.join(", ")}`,
+  }),
 });
 
 export default defineEventHandler(async (event) => {

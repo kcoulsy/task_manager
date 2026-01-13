@@ -2,60 +2,112 @@
 import { Popover, PopoverTrigger, PopoverContent } from "~/components/ui/popover";
 import { Button } from "~/components/ui/button";
 import { ROUTES } from "~~/utils/routes";
-import { useTaskHelpers } from "~/composables/useTaskHelpers";
 import { Plus } from "lucide-vue-next";
+import { useMutation, useQueryClient } from "@tanstack/vue-query";
+import type { Comment } from "~/types/comment";
+import { formatHumanRelativeDate } from "~~/utils/date-helpers";
+import { EMOJI_REACTION_OPTIONS } from "~~/utils/constants";
 
 const props = defineProps<{
-  comment: {
-    id: string;
-    content: string;
-    createdAt: Date | string;
-    user: {
-      id: string;
-      name: string;
-      email: string;
-    };
-    reactions: Array<{
-      emoji: string;
-      count: number;
-      userReacted: boolean;
-    }>;
-  };
+  comment: Comment;
   projectId: string;
   taskId: string;
-  onReactionChange?: () => void;
+  parentListSortOrder: "asc" | "desc";
 }>();
 
-const { formatDate } = useTaskHelpers();
+const queryClient = useQueryClient();
 
-const EMOJI_OPTIONS = ["👍", "👎", "❤️", "😂", "😮", "😢", "🎉", "🔥"];
+const queryKey = ["comments", props.projectId, props.taskId, props.parentListSortOrder];
+
+const reactionMutation = useMutation({
+  mutationFn: async (emoji: string) => {
+    const response = await $fetch<{ action: "added" | "removed" }>(
+      ROUTES.API.COMMENT_REACTIONS(props.projectId, props.taskId, props.comment.id),
+      {
+        method: "POST",
+        body: { emoji },
+        credentials: "include",
+      },
+    );
+    return { emoji, action: response.action };
+  },
+  onMutate: async (emoji) => {
+    await queryClient.cancelQueries({ queryKey });
+    const previousComments = queryClient.getQueryData<(typeof props.comment)[]>(queryKey);
+
+    queryClient.setQueryData<(typeof props.comment)[]>(queryKey, (old = []) => {
+      return old.map((comment) => {
+        if (comment.id !== props.comment.id) return comment;
+
+        const reactionIndex = comment.reactions.findIndex((r) => r.emoji === emoji);
+        const existingReaction = reactionIndex !== -1 ? comment.reactions[reactionIndex] : null;
+        const wasReacted = existingReaction?.userReacted ?? false;
+
+        if (wasReacted && existingReaction && existingReaction.count === 1) {
+          return {
+            ...comment,
+            reactions: comment.reactions.filter((_, i) => i !== reactionIndex),
+          };
+        }
+
+        if (wasReacted && existingReaction && existingReaction.count > 1) {
+          return {
+            ...comment,
+            reactions: {
+              ...comment.reactions,
+              [emoji]: {
+                emoji,
+                count: (existingReaction?.count ?? 0) - 1,
+                userReacted: false,
+              },
+            },
+          };
+        }
+
+        if (!wasReacted && existingReaction) {
+          return {
+            ...comment,
+            reactions: {
+              ...comment.reactions,
+              [emoji]: {
+                emoji,
+                count: (existingReaction?.count ?? 0) + 1,
+                userReacted: true,
+              },
+            },
+          };
+        }
+
+        return {
+          ...comment,
+          reactions: [...comment.reactions, { emoji, count: 1, userReacted: true }],
+        };
+      });
+    });
+
+    return { previousComments };
+  },
+  onError: (_err, _variables, context) => {
+    if (context?.previousComments) {
+      queryClient.setQueryData(queryKey, context.previousComments);
+    }
+    console.error("Failed to toggle reaction:", _err);
+  },
+  onSuccess: () => {
+    setTimeout(() => {
+      queryClient.invalidateQueries({
+        queryKey,
+      });
+    }, 500);
+  },
+});
 
 const handleReaction = async (emoji: string) => {
   try {
-    await $fetch(ROUTES.API.COMMENT_REACTIONS(props.projectId, props.taskId, props.comment.id), {
-      method: "POST",
-      body: { emoji },
-      credentials: "include",
-    });
-    props.onReactionChange?.();
+    await reactionMutation.mutateAsync(emoji);
   } catch (error) {
     console.error("Failed to toggle reaction:", error);
   }
-};
-
-const formatCommentDate = (date: string | Date) => {
-  const d = new Date(date);
-  const now = new Date();
-  const diffMs = now.getTime() - d.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 1) return "just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return formatDate(date, { year: "numeric", month: "short", day: "numeric" }) || "";
 };
 </script>
 
@@ -65,7 +117,7 @@ const formatCommentDate = (date: string | Date) => {
       <div class="flex-1">
         <div class="flex items-center gap-2 mb-1">
           <span class="font-semibold text-sm">{{ comment.user.name }}</span>
-          <span class="text-xs text-gray-500">{{ formatCommentDate(comment.createdAt) }}</span>
+          <span class="text-xs text-gray-500">{{ formatHumanRelativeDate(comment.createdAt) }}</span>
         </div>
         <p class="text-gray-700 text-sm whitespace-pre-wrap mb-2">{{ comment.content }}</p>
 
@@ -73,13 +125,13 @@ const formatCommentDate = (date: string | Date) => {
           <button
             v-for="reaction in comment.reactions"
             :key="reaction.emoji"
-            @click="handleReaction(reaction.emoji)"
-            class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs border transition-colors"
+            class="inline-flex items-center gap-1 px-2 cursor-pointer py-1 rounded-full text-xs border transition-colors"
             :class="
               reaction.userReacted
                 ? 'bg-blue-50 border-blue-200 text-blue-700'
                 : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
             "
+            @click="handleReaction(reaction.emoji)"
           >
             <span>{{ reaction.emoji }}</span>
             <span>{{ reaction.count }}</span>
@@ -87,15 +139,15 @@ const formatCommentDate = (date: string | Date) => {
 
           <Popover>
             <PopoverTrigger as-child>
-              <Button variant="outline" size="sm" class="h-7 text-xs"> <Plus class="h-4 w-4" /> </Button>
+              <Button variant="outline" size="sm" class="h-7 text-xs cursor-pointer"> <Plus class="h-4 w-4" /> </Button>
             </PopoverTrigger>
             <PopoverContent class="w-auto p-2">
               <div class="flex gap-2">
                 <button
-                  v-for="emoji in EMOJI_OPTIONS"
+                  v-for="emoji in EMOJI_REACTION_OPTIONS"
                   :key="emoji"
-                  @click="handleReaction(emoji)"
                   class="text-xl hover:scale-125 transition-transform p-1 rounded hover:bg-gray-100"
+                  @click="handleReaction(emoji)"
                 >
                   {{ emoji }}
                 </button>

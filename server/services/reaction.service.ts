@@ -1,5 +1,6 @@
 import { prisma } from "~~/utils/db";
 import { notFoundError } from "~~/server/utils/errors";
+import { transformReactions } from "~~/server/services/comment.service";
 
 async function verifyCommentAccess(commentId: string, userId: string) {
   const comment = await prisma.comment.findFirst({
@@ -72,31 +73,11 @@ export async function getReactionsByComment(commentId: string, userId: string) {
     where: {
       commentId,
     },
-    include: {
-      user: {
-        select: {
-          id: true,
-        },
-      },
+    select: {
+      emoji: true,
+      userId: true,
     },
   });
 
-  const reactionGroups: Record<string, { emoji: string; count: number; userReacted: boolean }> = {};
-
-  reactions.forEach((reaction) => {
-    if (!reactionGroups[reaction.emoji]) {
-      reactionGroups[reaction.emoji] = {
-        emoji: reaction.emoji,
-        count: 0,
-        userReacted: false,
-      };
-    }
-    const group = reactionGroups[reaction.emoji]!;
-    group.count++;
-    if (reaction.userId === userId) {
-      group.userReacted = true;
-    }
-  });
-
-  return Object.values(reactionGroups);
+  return transformReactions(reactions, userId);
 }

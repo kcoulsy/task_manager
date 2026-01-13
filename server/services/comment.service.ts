@@ -17,6 +17,30 @@ async function verifyTaskAccess(taskId: string, userId: string) {
   return task;
 }
 
+export function transformReactions(
+  reactions: Array<{ emoji: string; userId: string }>,
+  userId: string,
+): Array<{ emoji: string; count: number; userReacted: boolean }> {
+  const reactionGroups: Record<string, { emoji: string; count: number; userReacted: boolean }> = {};
+
+  reactions.forEach((reaction) => {
+    if (!reactionGroups[reaction.emoji]) {
+      reactionGroups[reaction.emoji] = {
+        emoji: reaction.emoji,
+        count: 0,
+        userReacted: false,
+      };
+    }
+    const group = reactionGroups[reaction.emoji]!;
+    group.count++;
+    if (reaction.userId === userId) {
+      group.userReacted = true;
+    }
+  });
+
+  return Object.values(reactionGroups);
+}
+
 export async function findAllCommentsByTask(taskId: string, userId: string, sortOrder: "asc" | "desc" = "desc") {
   await verifyTaskAccess(taskId, userId);
 
@@ -53,26 +77,12 @@ export async function findAllCommentsByTask(taskId: string, userId: string, sort
   });
 
   return topLevelComments.map((comment) => {
-    const reactionGroups: Record<string, { emoji: string; count: number; userReacted: boolean }> = {};
-
-    comment.reactions.forEach((reaction) => {
-      if (!reactionGroups[reaction.emoji]) {
-        reactionGroups[reaction.emoji] = {
-          emoji: reaction.emoji,
-          count: 0,
-          userReacted: false,
-        };
-      }
-      const group = reactionGroups[reaction.emoji]!;
-      group.count++;
-      if (reaction.userId === userId) {
-        group.userReacted = true;
-      }
-    });
-
     return {
       ...comment,
-      reactions: Object.values(reactionGroups),
+      reactions: transformReactions(
+        comment.reactions.map((r) => ({ emoji: r.emoji, userId: r.userId })),
+        userId,
+      ),
     };
   });
 }
@@ -80,7 +90,7 @@ export async function findAllCommentsByTask(taskId: string, userId: string, sort
 export async function createComment(taskId: string, userId: string, data: CreateCommentInput) {
   await verifyTaskAccess(taskId, userId);
 
-  return prisma.comment.create({
+  const comment = await prisma.comment.create({
     data: {
       id: crypto.randomUUID(),
       content: data.content,
@@ -95,9 +105,19 @@ export async function createComment(taskId: string, userId: string, data: Create
           email: true,
         },
       },
-      reactions: true,
+      reactions: {
+        select: {
+          emoji: true,
+          userId: true,
+        },
+      },
     },
   });
+
+  return {
+    ...comment,
+    reactions: transformReactions(comment.reactions, userId),
+  };
 }
 
 export async function findCommentById(commentId: string, userId: string) {

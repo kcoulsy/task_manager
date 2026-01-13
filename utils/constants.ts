@@ -53,3 +53,9 @@ export const HTTP_STATUS = {
   NOT_FOUND: 404,
   INTERNAL_SERVER_ERROR: 500,
 } as const;
+
+export const ONE_SECOND = 1000;
+export const ONE_MINUTE = ONE_SECOND * 60;
+export const FIVE_MINUTES = ONE_MINUTE * 5;
+
+export const EMOJI_REACTION_OPTIONS = ["👍", "👎", "❤️", "😂", "😮", "😢", "🎉", "🔥"] as const;

@@ -6,12 +6,14 @@ import { ROUTES } from "~~/utils/routes";
 import { HTTP_STATUS } from "~~/utils/constants";
 import { useTaskHelpers } from "~/composables/useTaskHelpers";
 import type { Task, Project } from "~~/generated/prisma/client";
+import type { Comment } from "~/types/comment";
 
 const route = useRoute();
 const projectId = route.params.id as string;
 const taskId = route.params.taskId as string;
 
-const { getStatusColor, getStatusCircleColor, getPriorityColor, formatDate, TASK_STATUS_LABELS, PRIORITY_LABELS } = useTaskHelpers();
+const { getStatusColor, getStatusCircleColor, getPriorityColor, formatDate, TASK_STATUS_LABELS, PRIORITY_LABELS } =
+  useTaskHelpers();
 
 if (!projectId || !taskId) {
   throw createError({
@@ -39,12 +41,20 @@ const { data: task, pending: isLoading } = await useFetch<Task & { project: Pick
   },
 );
 
+const { data: initialComments } = await useFetch<Comment[]>(ROUTES.API.TASK_COMMENTS(projectId, taskId), {
+  server: true,
+  query: { sort: "desc" },
+  credentials: "include",
+});
+
 const formatDetailDate = (date: string | Date | null | undefined) => {
-  return formatDate(date, {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }) || "Not set";
+  return (
+    formatDate(date, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }) || "Not set"
+  );
 };
 </script>
 
@@ -73,7 +83,10 @@ const formatDetailDate = (date: string | Date | null | undefined) => {
         <div class="grid grid-cols-2 gap-4">
           <div>
             <h3 class="font-semibold text-sm text-gray-700 mb-2">Status</h3>
-            <span class="inline-flex items-center gap-2 text-sm px-3 py-1 rounded font-medium" :class="getStatusColor(task.status)">
+            <span
+              class="inline-flex items-center gap-2 text-sm px-3 py-1 rounded font-medium"
+              :class="getStatusColor(task.status)"
+            >
               <span class="w-2 h-2 rounded-full" :class="getStatusCircleColor(task.status)"></span>
               {{ TASK_STATUS_LABELS[task.status] }}
             </span>
@@ -104,6 +117,8 @@ const formatDetailDate = (date: string | Date | null | undefined) => {
       </CardContent>
     </Card>
 
-    <CommentSection :task-id="taskId" :project-id="projectId" />
+    <ClientOnly>
+      <CommentSection :task-id="taskId" :project-id="projectId" :initial-comments="initialComments || []" />
+    </ClientOnly>
   </div>
 </template>
