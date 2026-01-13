@@ -2,15 +2,12 @@
 
 This project is purely for learning purposes, to familiarise myself with Nuxt and Vue after so long.
 
-## Feature Checklist
+## Features
 
-- [ ] Auth (better auth)
-- [ ] Styling (tailwind)
-- [ ] UI Components (shadcn-vue)
-- [ ] Projects
-- [ ] Tasks
-- [ ] Comments
-- [ ] Activity Log
+- **Authentication** - User registration and login
+- **Projects** - Create and manage projects
+- **Tasks** - Create and manage tasks within projects
+- **Comments with Reactions** - Add comments to tasks and react to them
 
 ## Setup
 
