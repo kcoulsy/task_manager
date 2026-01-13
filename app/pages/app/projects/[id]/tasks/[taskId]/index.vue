@@ -56,6 +56,22 @@ const formatDetailDate = (date: string | Date | null | undefined) => {
     }) || "Not set"
   );
 };
+
+useHead(
+  computed(() => ({
+    title: task.value ? `${task.value.title} - Task Manager` : "Task - Task Manager",
+    meta: [
+      {
+        name: "description",
+        content: task.value?.description
+          ? `${task.value.title} - ${task.value.description.substring(0, 150)}${task.value.description.length > 150 ? "..." : ""}`
+          : task.value?.title
+            ? `View details for task: ${task.value.title}`
+            : "View task details.",
+      },
+    ],
+  })),
+);
 </script>
 
 <template>

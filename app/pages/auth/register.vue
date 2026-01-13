@@ -14,6 +14,16 @@ definePageMeta({
   middleware: "require-no-auth",
 });
 
+useHead({
+  title: "Register - Task Manager",
+  meta: [
+    {
+      name: "description",
+      content: "Create a new Task Manager account to start organizing your projects and tasks.",
+    },
+  ],
+});
+
 configure({
   validateOnBlur: false,
   validateOnChange: false,

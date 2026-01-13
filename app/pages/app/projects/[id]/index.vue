@@ -31,6 +31,20 @@ const { data: project, pending: isLoading } = await useFetch<Project>(ROUTES.API
   },
 });
 
+useHead(
+  computed(() => ({
+    title: project.value ? `${project.value.name} - Task Manager` : "Project - Task Manager",
+    meta: [
+      {
+        name: "description",
+        content: project.value?.description
+          ? `View and manage tasks for ${project.value.name}. ${project.value.description}`
+          : "View and manage your project tasks.",
+      },
+    ],
+  })),
+);
+
 const { data: tasks, refresh: refreshTasks } = await useFetch<Task[]>(ROUTES.API.PROJECT_TASKS(projectId), {
   server: true,
 });

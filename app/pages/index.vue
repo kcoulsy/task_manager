@@ -1,3 +1,16 @@
+<script setup lang="ts">
+useHead({
+  title: "Task Manager - Organize Your Tasks and Boost Productivity",
+  meta: [
+    {
+      name: "description",
+      content:
+        "Organize your tasks, boost your productivity, and never miss a deadline again. Simple, powerful, and designed for modern workflows.",
+    },
+  ],
+});
+</script>
+
 <template>
   <div class="text-center py-12">
     <div class="max-w-4xl mx-auto px-4">

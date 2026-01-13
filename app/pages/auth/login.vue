@@ -13,6 +13,16 @@ definePageMeta({
   middleware: "require-no-auth",
 });
 
+useHead({
+  title: "Login - Task Manager",
+  meta: [
+    {
+      name: "description",
+      content: "Login to your Task Manager account to access your projects and tasks.",
+    },
+  ],
+});
+
 const formSchema = toTypedSchema(
   z.object({
     email: z.string().email(),

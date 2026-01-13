@@ -11,6 +11,16 @@ definePageMeta({
   middleware: "require-auth",
 });
 
+useHead({
+  title: "Dashboard - Task Manager",
+  meta: [
+    {
+      name: "description",
+      content: "Manage your projects and tasks from your dashboard.",
+    },
+  ],
+});
+
 // Must call composables BEFORE any await statements
 const dialogStore = useDialogStore();
 
