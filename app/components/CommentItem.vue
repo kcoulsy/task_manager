@@ -1,12 +1,14 @@
 <script setup lang="ts">
+import { ref, computed } from "vue";
 import { Popover, PopoverTrigger, PopoverContent } from "~/components/ui/popover";
 import { Button } from "~/components/ui/button";
 import { ROUTES } from "~~/utils/routes";
-import { Plus } from "lucide-vue-next";
+import { Plus, Reply } from "lucide-vue-next";
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import type { Comment } from "~/types/comment";
 import { formatHumanRelativeDate } from "~~/utils/date-helpers";
 import { EMOJI_REACTION_OPTIONS } from "~~/utils/constants";
+import { authClient } from "~~/utils/auth-client";
 
 const props = defineProps<{
   comment: Comment;
@@ -16,6 +18,9 @@ const props = defineProps<{
 }>();
 
 const queryClient = useQueryClient();
+const session = authClient.useSession();
+const showReplyInput = ref(false);
+const replyContent = ref("");
 
 const queryKey = ["comments", props.projectId, props.taskId, props.parentListSortOrder];
 
@@ -33,56 +38,70 @@ const reactionMutation = useMutation({
   },
   onMutate: async (emoji) => {
     await queryClient.cancelQueries({ queryKey });
-    const previousComments = queryClient.getQueryData<(typeof props.comment)[]>(queryKey);
+    const previousComments = queryClient.getQueryData<Comment[]>(queryKey);
 
-    queryClient.setQueryData<(typeof props.comment)[]>(queryKey, (old = []) => {
-      return old.map((comment) => {
-        if (comment.id !== props.comment.id) return comment;
-
-        const reactionIndex = comment.reactions.findIndex((r) => r.emoji === emoji);
-        const existingReaction = reactionIndex !== -1 ? comment.reactions[reactionIndex] : null;
-        const wasReacted = existingReaction?.userReacted ?? false;
-
-        if (wasReacted && existingReaction && existingReaction.count === 1) {
+    const updateCommentReactions = (comment: Comment): Comment => {
+      if (comment.id !== props.comment.id) {
+        // If this comment has replies, update them recursively
+        if (comment.replies && comment.replies.length > 0) {
           return {
             ...comment,
-            reactions: comment.reactions.filter((_, i) => i !== reactionIndex),
-          };
+            replies: comment.replies.map((reply) => updateCommentReactions(reply as Comment)),
+          } as Comment;
         }
+        return comment;
+      }
 
-        if (wasReacted && existingReaction && existingReaction.count > 1) {
-          return {
-            ...comment,
-            reactions: {
-              ...comment.reactions,
-              [emoji]: {
-                emoji,
-                count: (existingReaction?.count ?? 0) - 1,
-                userReacted: false,
-              },
-            },
-          };
-        }
+      const reactionIndex = comment.reactions.findIndex((r) => r.emoji === emoji);
+      const existingReaction = reactionIndex !== -1 ? comment.reactions[reactionIndex] : null;
+      const wasReacted = existingReaction?.userReacted ?? false;
 
-        if (!wasReacted && existingReaction) {
-          return {
-            ...comment,
-            reactions: {
-              ...comment.reactions,
-              [emoji]: {
-                emoji,
-                count: (existingReaction?.count ?? 0) + 1,
-                userReacted: true,
-              },
-            },
-          };
-        }
-
+      if (wasReacted && existingReaction && existingReaction.count === 1) {
         return {
           ...comment,
-          reactions: [...comment.reactions, { emoji, count: 1, userReacted: true }],
+          reactions: comment.reactions.filter((_, i) => i !== reactionIndex),
         };
-      });
+      }
+
+      if (wasReacted && existingReaction && existingReaction.count > 1) {
+        return {
+          ...comment,
+          reactions: comment.reactions.map((r, i) =>
+            i === reactionIndex
+              ? {
+                  emoji,
+                  count: (existingReaction?.count ?? 0) - 1,
+                  userReacted: false,
+                }
+              : r,
+          ),
+        };
+      }
+
+      if (!wasReacted && existingReaction) {
+        return {
+          ...comment,
+          reactions: comment.reactions.map((r, i) =>
+            i === reactionIndex
+              ? {
+                  emoji,
+                  count: (existingReaction?.count ?? 0) + 1,
+                  userReacted: true,
+                }
+              : r,
+          ),
+        };
+      }
+
+      return {
+        ...comment,
+        reactions: [...comment.reactions, { emoji, count: 1, userReacted: true }],
+      };
+    };
+
+    queryClient.setQueryData(queryKey, (old: Comment[] | undefined) => {
+      const comments = [...(old || [])];
+      return comments.map((comment: Comment) => updateCommentReactions(comment));
     });
 
     return { previousComments };
@@ -114,6 +133,91 @@ const hasUserReacted = (emoji: string): boolean => {
   const reaction = props.comment.reactions.find((r) => r.emoji === emoji);
   return reaction?.userReacted ?? false;
 };
+
+const replyMutation = useMutation({
+  mutationFn: async (content: string) => {
+    const response = await $fetch<Comment>(ROUTES.API.TASK_COMMENTS(props.projectId, props.taskId), {
+      method: "POST",
+      body: { content, parentId: props.comment.id },
+      credentials: "include",
+    });
+    return response;
+  },
+  onMutate: async (content) => {
+    await queryClient.cancelQueries({ queryKey });
+    const previousComments = queryClient.getQueryData<Comment[]>(queryKey);
+
+    const userId = session.value?.data?.user?.id || "";
+    const userEmail = session.value?.data?.user?.email || "";
+    const userName = session.value?.data?.user?.name || userEmail.split("@")[0] || "User";
+
+    const optimisticReply = {
+      id: `temp-reply-${Date.now()}`,
+      content: content.trim(),
+      createdAt: new Date(),
+      user: {
+        id: userId,
+        name: userName,
+        email: userEmail,
+      },
+      reactions: [],
+      updatedAt: new Date(),
+      taskId: props.taskId,
+      userId: userId,
+      parentId: props.comment.id,
+      replies: [],
+    } as Comment;
+
+    queryClient.setQueryData(queryKey, (old: Comment[] | undefined) => {
+      const comments = [...(old || [])];
+      return comments.map((comment: Comment) => {
+        if (comment.id !== props.comment.id) return comment;
+        return {
+          ...comment,
+          replies: [optimisticReply, ...(comment.replies || [])],
+        };
+      });
+    });
+
+    return { previousComments };
+  },
+  onError: (_err, _variables, context) => {
+    if (context?.previousComments) {
+      queryClient.setQueryData(queryKey, context.previousComments);
+    }
+    alert("Failed to create reply");
+    // Reopen reply input on error so user can try again
+    showReplyInput.value = true;
+  },
+  onSuccess: () => {
+    setTimeout(() => {
+      queryClient.invalidateQueries({ queryKey });
+    }, 1000);
+  },
+});
+
+const handleReply = async () => {
+  if (!replyContent.value.trim()) return;
+
+  const content = replyContent.value.trim();
+  replyContent.value = "";
+  showReplyInput.value = false;
+
+  try {
+    await replyMutation.mutateAsync(content);
+  } catch (error) {
+    console.error("Failed to create reply:", error);
+  }
+};
+
+const toggleReplyInput = () => {
+  showReplyInput.value = !showReplyInput.value;
+  if (!showReplyInput.value) {
+    replyContent.value = "";
+  }
+};
+
+const isTopLevelComment = computed(() => !props.comment.parentId);
 </script>
 
 <template>
@@ -160,6 +264,47 @@ const hasUserReacted = (emoji: string): boolean => {
               </div>
             </PopoverContent>
           </Popover>
+
+          <Button
+            v-if="isTopLevelComment"
+            variant="ghost"
+            size="sm"
+            class="h-7 text-xs cursor-pointer text-gray-600 hover:text-gray-900"
+            @click="toggleReplyInput"
+          >
+            <Reply class="h-3.5 w-3.5 mr-1" />
+            Reply
+          </Button>
+        </div>
+
+        <div v-if="showReplyInput" class="mt-3 ml-4 border-l-2 border-gray-200 pl-4">
+          <textarea
+            v-model="replyContent"
+            placeholder="Write a reply..."
+            class="w-full min-h-[60px] px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+            @keydown.ctrl.enter="handleReply"
+            @keydown.meta.enter="handleReply"
+          />
+          <div class="flex justify-end gap-2 mt-2">
+            <Button variant="ghost" size="sm" @click="toggleReplyInput">Cancel</Button>
+            <Button :disabled="!replyContent.trim() || replyMutation.isPending.value" size="sm" @click="handleReply">
+              {{ replyMutation.isPending.value ? "Posting..." : "Post Reply" }}
+            </Button>
+          </div>
+        </div>
+
+        <div
+          v-if="comment.replies && comment.replies.length > 0"
+          class="mt-4 ml-4 border-l-2 border-gray-200 pl-4 space-y-3"
+        >
+          <CommentItem
+            v-for="reply in comment.replies"
+            :key="reply.id"
+            :comment="reply as Comment"
+            :project-id="projectId"
+            :task-id="taskId"
+            :parent-list-sort-order="parentListSortOrder"
+          />
         </div>
       </div>
     </div>

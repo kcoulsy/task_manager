@@ -1,5 +1,5 @@
 import { prisma } from "~~/utils/db";
-import { notFoundError } from "~~/server/utils/errors";
+import { notFoundError, badRequestError } from "~~/server/utils/errors";
 import type { CreateCommentInput, UpdateCommentInput } from "~~/server/schemas/comment.schema";
 
 async function verifyTaskAccess(taskId: string, userId: string) {
@@ -65,6 +65,29 @@ export async function findAllCommentsByTask(taskId: string, userId: string, sort
           },
         },
       },
+      replies: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          reactions: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      },
     },
   });
 
@@ -83,6 +106,14 @@ export async function findAllCommentsByTask(taskId: string, userId: string, sort
         comment.reactions.map((r) => ({ emoji: r.emoji, userId: r.userId })),
         userId,
       ),
+      replies: comment.replies.map((reply) => ({
+        ...reply,
+        reactions: transformReactions(
+          reply.reactions.map((r) => ({ emoji: r.emoji, userId: r.userId })),
+          userId,
+        ),
+        replies: [], // Replies can't have replies (only 1 level deep)
+      })),
     };
   });
 }
@@ -90,12 +121,30 @@ export async function findAllCommentsByTask(taskId: string, userId: string, sort
 export async function createComment(taskId: string, userId: string, data: CreateCommentInput) {
   await verifyTaskAccess(taskId, userId);
 
+  if (data.parentId) {
+    const parentComment = await prisma.comment.findFirst({
+      where: {
+        id: data.parentId,
+        taskId,
+      },
+    });
+
+    if (!parentComment) {
+      throw notFoundError("Parent comment not found");
+    }
+
+    if (parentComment.parentId) {
+      throw badRequestError("Cannot reply to a reply. Only one level of nesting is allowed.");
+    }
+  }
+
   const comment = await prisma.comment.create({
     data: {
       id: crypto.randomUUID(),
       content: data.content,
       taskId,
       userId,
+      parentId: data.parentId || null,
     },
     include: {
       user: {

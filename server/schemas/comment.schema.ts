@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const CreateCommentSchema = z.object({
   content: z.string().min(1, "Comment content is required").trim(),
+  parentId: z.string().optional(),
 });
 
 export const UpdateCommentSchema = z.object({
@@ -10,6 +11,7 @@ export const UpdateCommentSchema = z.object({
 
 export type CreateCommentInput = {
   content: string;
+  parentId?: string;
 };
 
 export type UpdateCommentInput = {

@@ -75,6 +75,7 @@ const createCommentMutation = useMutation({
       taskId: props.taskId,
       userId: userId,
       parentId: null,
+      replies: [],
     };
 
     queryClient.setQueryData<Comment[]>(queryKey, (old = []) => {
