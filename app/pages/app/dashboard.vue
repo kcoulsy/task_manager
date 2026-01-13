@@ -51,7 +51,7 @@ const openCreateDialog = () => {
           </h1>
           <p class="text-editorial-slate">Manage your projects and tasks.</p>
         </div>
-        <Button @click="openCreateDialog" class="bg-editorial-accent hover:bg-editorial-accent/90 text-white">
+        <Button class="bg-editorial-accent hover:bg-editorial-accent/90 text-white" @click="openCreateDialog">
           <Plus class="h-4 w-4 mr-2" />
           New Project
         </Button>

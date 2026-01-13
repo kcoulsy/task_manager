@@ -115,8 +115,8 @@ const handleClose = () => {
         <Button variant="outline" :disabled="isSubmitting" @click="handleClose">Cancel</Button>
         <Button
           :disabled="isSubmitting"
-          @click="handleSubmit"
           class="bg-editorial-accent hover:bg-editorial-accent/90 text-white"
+          @click="handleSubmit"
         >
           {{ isSubmitting ? "Saving..." : isEditing ? "Update" : "Create" }}
         </Button>

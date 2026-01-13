@@ -25,7 +25,12 @@ const handleChange = async (newStatus: unknown) => {
 </script>
 
 <template>
-  <Select :model-value="status" :open="selectOpen" @update:open="selectOpen = $event" @update:model-value="handleChange">
+  <Select
+    :model-value="status"
+    :open="selectOpen"
+    @update:open="selectOpen = $event"
+    @update:model-value="handleChange"
+  >
     <SelectTrigger
       class="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-md font-medium cursor-pointer hover:opacity-80 transition-all w-auto h-auto shadow-none"
       :class="getStatusColor(status)"

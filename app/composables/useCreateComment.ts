@@ -6,11 +6,7 @@ import { toast } from "vue-sonner";
 import type { Comment } from "~/types/comment";
 import { toValue } from "vue";
 
-export function useCreateComment(
-  projectId: string,
-  taskId: string,
-  sortOrder: MaybeRefOrGetter<"asc" | "desc">,
-) {
+export function useCreateComment(projectId: string, taskId: string, sortOrder: MaybeRefOrGetter<"asc" | "desc">) {
   const queryClient = useQueryClient();
   const session = authClient.useSession();
   const queryKey = computed(() => ["comments", projectId, taskId, toValue(sortOrder)]);

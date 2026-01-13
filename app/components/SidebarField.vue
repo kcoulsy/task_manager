@@ -9,7 +9,7 @@ const props = defineProps<{
 
 // Dynamically get the icon component from lucide-vue-next
 const IconComponent = computed(() => {
-  return (LucideIcons as any)[props.icon];
+  return (LucideIcons as Record<string, unknown>)[props.icon];
 });
 </script>
 

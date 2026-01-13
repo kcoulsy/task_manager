@@ -60,8 +60,8 @@ const passwordIconLabel = computed(() => {
       v-if="isPassword"
       type="button"
       class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 cursor-pointer hover:text-editorial-navy transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-editorial-accent focus-visible:ring-offset-2 rounded-sm"
-      @click.stop="togglePasswordVisibility"
       :aria-label="passwordIconLabel"
+      @click.stop="togglePasswordVisibility"
     >
       <span :key="`icon-${showPassword}`">
         <EyeOff v-if="showPassword" class="h-4 w-4" />

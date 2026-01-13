@@ -1,6 +1,6 @@
 # Task Manager
 
-This project is purely for learning purposes, to familiarise myself with Nuxt and Vue after a long time. 
+This project is purely for learning purposes, to familiarise myself with Nuxt and Vue after a long time.
 
 ## Features
 

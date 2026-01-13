@@ -19,8 +19,8 @@ defineProps<{
           <Button
             variant="ghost"
             size="sm"
-            @click="navigateTo(ROUTES.APP.PROJECT(projectId))"
             class="text-slate-600 hover:text-editorial-navy transition-colors"
+            @click="navigateTo(ROUTES.APP.PROJECT(projectId))"
           >
             {{ projectName }}
           </Button>

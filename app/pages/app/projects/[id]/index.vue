@@ -72,7 +72,11 @@ const handleTaskCreated = () => {
           </h1>
           <p v-if="project.description" class="text-editorial-slate">{{ project.description }}</p>
         </div>
-        <Button variant="ghost" @click="navigateTo(ROUTES.APP.DASHBOARD)" class="text-editorial-slate hover:text-editorial-navy">
+        <Button
+          variant="ghost"
+          class="text-editorial-slate hover:text-editorial-navy"
+          @click="navigateTo(ROUTES.APP.DASHBOARD)"
+        >
           Back to Dashboard
         </Button>
       </div>
@@ -86,7 +90,7 @@ const handleTaskCreated = () => {
                 {{ tasks?.length || 0 }} {{ tasks?.length === 1 ? "task" : "tasks" }} in this project
               </CardDescription>
             </div>
-            <Button @click="openTaskDialog" class="bg-editorial-accent hover:bg-editorial-accent/90 text-white">
+            <Button class="bg-editorial-accent hover:bg-editorial-accent/90 text-white" @click="openTaskDialog">
               Create Task
             </Button>
           </div>

@@ -98,9 +98,9 @@
   --content-max-width: 1400px;
 
   /* Typography */
-  --font-display: 'Playfair Display', Georgia, serif;
-  --font-body: 'Inter', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
 }
 
 .dark {
