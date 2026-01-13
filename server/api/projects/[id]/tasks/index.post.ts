@@ -1,8 +1,8 @@
-import { requireAuth } from "../../../../utils/require-auth";
-import { readValidatedBody } from "../../../../utils/validate";
-import { CreateTaskSchema, type CreateTaskInput } from "../../../../schemas/task.schema";
-import { createTask } from "../../../../services/task.service";
-import { handleServiceError } from "../../../../utils/errors";
+import { requireAuth } from "~~/server/utils/require-auth";
+import { readValidatedBody } from "~~/server/utils/validate";
+import { CreateTaskSchema, type CreateTaskInput } from "~~/server/schemas/task.schema";
+import { createTask } from "~~/server/services/task.service";
+import { handleServiceError } from "~~/server/utils/errors";
 import { ERROR_MESSAGES, HTTP_STATUS } from "~~/utils/constants";
 
 export default defineEventHandler(async (event) => {

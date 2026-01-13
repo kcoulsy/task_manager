@@ -7,13 +7,13 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { FormItem } from "@/components/ui/form";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+} from "~/components/ui/dialog";
+import { FormItem } from "~/components/ui/form";
+import { Label } from "~/components/ui/label";
+import { Input } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
 import { ROUTES } from "~~/utils/routes";
-import { useDialogStore } from "@/stores/dialogStore";
+import { useDialogStore } from "~/stores/dialogStore";
 
 const props = defineProps<{
   onRefresh?: () => void;

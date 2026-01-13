@@ -3,7 +3,7 @@ import type { HTMLAttributes } from "vue";
 import { useVModel } from "@vueuse/core";
 import { ref, computed } from "vue";
 import { Eye, EyeOff } from "lucide-vue-next";
-import { cn } from "@/lib/utils";
+import { cn } from "~/lib/utils";
 
 const props = defineProps<{
   defaultValue?: string | number;

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
 import { ROUTES } from "~~/utils/routes";
 import { HTTP_STATUS } from "~~/utils/constants";
-import { useTaskHelpers } from "@/composables/useTaskHelpers";
+import { useTaskHelpers } from "~/composables/useTaskHelpers";
 import type { Task, Project } from "~~/generated/prisma/client";
 
 const route = useRoute();

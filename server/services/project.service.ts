@@ -1,6 +1,6 @@
 import { prisma } from "~~/utils/db";
-import { notFoundError } from "../utils/errors";
-import type { CreateProjectInput, UpdateProjectInput } from "../schemas/project.schema";
+import { notFoundError } from "~~/server/utils/errors";
+import type { CreateProjectInput, UpdateProjectInput } from "~~/server/schemas/project.schema";
 
 export async function findAllProjectsByUser(userId: string) {
   return prisma.project.findMany({

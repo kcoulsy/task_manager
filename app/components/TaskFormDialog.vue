@@ -11,16 +11,16 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FormItem } from "@/components/ui/form";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import DatePicker from "@/components/ui/date-picker/DatePicker.vue";
+} from "~/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { FormItem } from "~/components/ui/form";
+import { Label } from "~/components/ui/label";
+import { Input } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
+import DatePicker from "~/components/ui/date-picker/DatePicker.vue";
 import { ROUTES } from "~~/utils/routes";
-import { useDialogStore } from "@/stores/dialogStore";
-import { useTaskHelpers } from "@/composables/useTaskHelpers";
+import { useDialogStore } from "~/stores/dialogStore";
+import { useTaskHelpers } from "~/composables/useTaskHelpers";
 import type { TaskStatus, Priority } from "~~/generated/prisma/enums";
 
 const props = defineProps<{

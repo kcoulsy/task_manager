@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import ProjectCard from "./ProjectCard.vue";
-import { Button } from "@/components/ui/button";
+import ProjectCard from "~/components/ProjectCard.vue";
+import { Button } from "~/components/ui/button";
 import { Plus } from "lucide-vue-next";
 import type { Project } from "~~/generated/prisma/client";
 

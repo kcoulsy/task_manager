@@ -1,7 +1,7 @@
 import { prisma } from "~~/utils/db";
-import { notFoundError } from "../utils/errors";
-import type { CreateTaskInput, UpdateTaskInput } from "../schemas/task.schema";
-import { findProjectByIdForUser } from "./project.service";
+import { notFoundError } from "~~/server/utils/errors";
+import type { CreateTaskInput, UpdateTaskInput } from "~~/server/schemas/task.schema";
+import { findProjectByIdForUser } from "~~/server/services/project.service";
 
 export async function findAllTasksByProject(projectId: string, userId: string) {
   await findProjectByIdForUser(projectId, userId);

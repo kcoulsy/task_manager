@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { Button } from "@/components/ui/button";
+import { Button } from "~/components/ui/button";
 import { Plus } from "lucide-vue-next";
-import ProjectsList from "@/components/ProjectsList.vue";
-import ProjectFormDialog from "@/components/ProjectFormDialog.vue";
+import ProjectsList from "~/components/ProjectsList.vue";
+import ProjectFormDialog from "~/components/ProjectFormDialog.vue";
 import { ROUTES } from "~~/utils/routes";
-import { useDialogStore } from "@/stores/dialogStore";
+import { useDialogStore } from "~/stores/dialogStore";
 import type { Project } from "~~/generated/prisma/client";
 
 definePageMeta({

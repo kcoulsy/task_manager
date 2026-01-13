@@ -1,8 +1,8 @@
-import { requireAuth } from "../../utils/require-auth";
-import { readValidatedBody } from "../../utils/validate";
-import { CreateProjectSchema } from "../../schemas/project.schema";
-import { createProject } from "../../services/project.service";
-import { handleServiceError } from "../../utils/errors";
+import { requireAuth } from "~~/server/utils/require-auth";
+import { readValidatedBody } from "~~/server/utils/validate";
+import { CreateProjectSchema } from "~~/server/schemas/project.schema";
+import { createProject } from "~~/server/services/project.service";
+import { handleServiceError } from "~~/server/utils/errors";
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuth(event);

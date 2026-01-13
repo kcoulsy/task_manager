@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import TaskFormDialog from "@/components/TaskFormDialog.vue";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
+import TaskFormDialog from "~/components/TaskFormDialog.vue";
 import { ROUTES } from "~~/utils/routes";
-import { useDialogStore } from "@/stores/dialogStore";
-import { useTaskHelpers } from "@/composables/useTaskHelpers";
+import { useDialogStore } from "~/stores/dialogStore";
+import { useTaskHelpers } from "~/composables/useTaskHelpers";
 import type { Project, Task } from "~~/generated/prisma/client";
 
 const route = useRoute();

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { authClient } from "../../utils/auth-client";
-import { Button } from "@/components/ui/button";
+import { authClient } from "~~/utils/auth-client";
+import { Button } from "~/components/ui/button";
 import { ROUTES } from "~~/utils/routes";
 
 const session = authClient.useSession();

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardAction } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardAction } from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
 import { Pencil, Trash2 } from "lucide-vue-next";
 import { ROUTES } from "~~/utils/routes";
-import { useDialogStore } from "@/stores/dialogStore";
+import { useDialogStore } from "~/stores/dialogStore";
 import type { Project } from "~~/generated/prisma/client";
 
 const props = defineProps<{
