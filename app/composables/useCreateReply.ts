@@ -2,6 +2,7 @@ import { computed, type MaybeRefOrGetter } from "vue";
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import { ROUTES } from "~~/utils/routes";
 import { authClient } from "~~/utils/auth-client";
+import { toast } from "vue-sonner";
 import type { Comment } from "~/types/comment";
 import { toValue } from "vue";
 
@@ -66,7 +67,7 @@ export function useCreateReply(
       if (context?.previousComments) {
         queryClient.setQueryData(queryKey.value, context.previousComments);
       }
-      alert("Failed to create reply");
+      toast.error("Failed to create reply");
     },
     onSuccess: () => {
       setTimeout(() => {

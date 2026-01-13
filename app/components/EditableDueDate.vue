@@ -29,17 +29,17 @@ const formatDetailDate = (date: string | Date | null | undefined) => {
   );
 };
 
-const dueDateModel = computed<DateValue | null>({
-  get: (): DateValue | null => {
-    if (!props.dueDate) return null;
+const dueDateModel = computed<DateValue | undefined>({
+  get: (): DateValue | undefined => {
+    if (!props.dueDate) return undefined;
     const dateString =
       props.dueDate instanceof Date
         ? props.dueDate.toISOString().split("T")[0]
         : new Date(props.dueDate).toISOString().split("T")[0];
-    return stringToDateValue(dateString) as DateValue | null;
+    return stringToDateValue(dateString) as DateValue | undefined;
   },
-  set: async (value: DateValue | null | undefined) => {
-    const dateString = dateValueToString(value as CalendarDate | null);
+  set: async (value: DateValue | undefined) => {
+    const dateString = dateValueToString((value as CalendarDate) || null);
     const currentDateString = props.dueDate
       ? props.dueDate instanceof Date
         ? props.dueDate.toISOString().split("T")[0]

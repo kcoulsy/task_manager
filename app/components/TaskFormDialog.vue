@@ -21,6 +21,7 @@ import DatePicker from "~/components/ui/date-picker/DatePicker.vue";
 import { ROUTES } from "~~/utils/routes";
 import { useDialogStore } from "~/stores/dialogStore";
 import { useTaskHelpers } from "~/composables/useTaskHelpers";
+import { toast } from "vue-sonner";
 import type { TaskStatus, Priority } from "~~/generated/prisma/enums";
 
 const props = defineProps<{
@@ -100,21 +101,36 @@ const handleSubmit = async () => {
   isSubmitting.value = true;
 
   try {
-    await $fetch(ROUTES.API.PROJECT_TASKS(store.taskDialogProjectId), {
-      method: "POST",
-      body: {
-        title: formData.value.title,
-        description: formData.value.description || null,
-        status: formData.value.status,
-        priority: formData.value.priority,
-        dueDate: dateValueToString(formData.value.dueDate as CalendarDate | null),
-      },
-    });
+    if (store.editingTask) {
+      await $fetch(ROUTES.API.TASK(store.taskDialogProjectId, store.editingTask.id), {
+        method: "PUT",
+        body: {
+          title: formData.value.title,
+          description: formData.value.description || null,
+          status: formData.value.status,
+          priority: formData.value.priority,
+          dueDate: dateValueToString(formData.value.dueDate as CalendarDate | null),
+        },
+      });
+      toast.success("Task updated successfully");
+    } else {
+      await $fetch(ROUTES.API.PROJECT_TASKS(store.taskDialogProjectId), {
+        method: "POST",
+        body: {
+          title: formData.value.title,
+          description: formData.value.description || null,
+          status: formData.value.status,
+          priority: formData.value.priority,
+          dueDate: dateValueToString(formData.value.dueDate as CalendarDate | null),
+        },
+      });
+      toast.success("Task created successfully");
+    }
     store.closeTaskDialog();
     props.onRefresh?.();
   } catch (error) {
-    console.error("Failed to create task:", error);
-    alert("Failed to create task");
+    console.error("Failed to save task:", error);
+    toast.error(store.editingTask ? "Failed to update task" : "Failed to create task");
   } finally {
     isSubmitting.value = false;
   }

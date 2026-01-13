@@ -1,6 +1,7 @@
 import { computed } from "vue";
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import { ROUTES } from "~~/utils/routes";
+import { toast } from "vue-sonner";
 import type { Task, Project } from "~~/generated/prisma/client";
 import type { UpdateTaskInput } from "~~/server/schemas/task.schema";
 
@@ -48,9 +49,10 @@ export function useUpdateTask(projectId: string, taskId: string) {
       if (context?.previousTask) {
         queryClient.setQueryData(queryKey.value, context.previousTask);
       }
-      alert("Failed to update task");
+      toast.error("Failed to update task");
     },
     onSuccess: () => {
+      toast.success("Task updated successfully");
       setTimeout(() => {
         queryClient.invalidateQueries({
           queryKey: queryKey.value,

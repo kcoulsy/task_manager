@@ -4,6 +4,7 @@ import { Button } from "~/components/ui/button";
 import { Pencil, Trash2 } from "lucide-vue-next";
 import { ROUTES } from "~~/utils/routes";
 import { useDialogStore } from "~/stores/dialogStore";
+import { toast } from "vue-sonner";
 import type { Project } from "~~/generated/prisma/client";
 
 const props = defineProps<{
@@ -28,10 +29,11 @@ const handleDelete = async (event: Event) => {
     await $fetch(ROUTES.API.PROJECT(props.project.id), {
       method: "DELETE",
     });
+    toast.success("Project deleted successfully");
     props.onRefresh?.();
   } catch (error) {
     console.error("Failed to delete project:", error);
-    alert("Failed to delete project");
+    toast.error("Failed to delete project");
   }
 };
 

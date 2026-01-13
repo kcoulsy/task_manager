@@ -14,6 +14,7 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { ROUTES } from "~~/utils/routes";
 import { useDialogStore } from "~/stores/dialogStore";
+import { toast } from "vue-sonner";
 
 const props = defineProps<{
   onRefresh?: () => void;
@@ -66,17 +67,19 @@ const handleSubmit = async () => {
         method: "PUT",
         body: formData.value,
       });
+      toast.success("Project updated successfully");
     } else {
       await $fetch(ROUTES.API.PROJECTS, {
         method: "POST",
         body: formData.value,
       });
+      toast.success("Project created successfully");
     }
     store.closeProjectDialog();
     props.onRefresh?.();
   } catch (error) {
     console.error("Failed to save project:", error);
-    alert("Failed to save project");
+    toast.error("Failed to save project");
   } finally {
     isSubmitting.value = false;
   }

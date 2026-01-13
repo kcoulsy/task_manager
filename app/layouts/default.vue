@@ -2,6 +2,7 @@
 import { authClient } from "~~/utils/auth-client";
 import { Button } from "~/components/ui/button";
 import { ROUTES } from "~~/utils/routes";
+import { Toaster } from "vue-sonner";
 
 const session = authClient.useSession();
 
@@ -50,5 +51,6 @@ const logoLink = computed(() => {
     <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
       <slot />
     </main>
+    <Toaster position="bottom-left" />
   </div>
 </template>
