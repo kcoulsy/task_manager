@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
+import type { DateValue } from "reka-ui";
+import type { CalendarDate } from "@internationalized/date";
+import type { WritableComputedRef } from "vue";
+import { dateValueToString, stringToDateValue } from "~~/utils/date-helpers";
 import {
   Dialog,
   DialogContent,
@@ -13,6 +17,7 @@ import { FormItem } from "@/components/ui/form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import DatePicker from "@/components/ui/date-picker/DatePicker.vue";
 import { ROUTES } from "~~/utils/routes";
 import { useDialogStore } from "@/stores/dialogStore";
 import { useTaskHelpers } from "@/composables/useTaskHelpers";
@@ -23,30 +28,39 @@ const props = defineProps<{
 }>();
 
 const store = useDialogStore();
-const { formatDateForInput, TASK_STATUS, PRIORITY, TASK_STATUS_LABELS, PRIORITY_LABELS, getStatusCircleColor } = useTaskHelpers();
+const { formatDateForInput, TASK_STATUS, PRIORITY, TASK_STATUS_LABELS, PRIORITY_LABELS, getStatusCircleColor } =
+  useTaskHelpers();
 
-const getDefaultFormData = () => ({
+type FormData = {
+  title: string;
+  description: string;
+  status: TaskStatus;
+  priority: Priority;
+  dueDate: CalendarDate | null;
+};
+
+const getDefaultFormData = (): FormData => ({
   title: "",
   description: "",
   status: TASK_STATUS.TODO as TaskStatus,
   priority: PRIORITY.MEDIUM as Priority,
-  dueDate: "",
+  dueDate: null,
 });
 
-const formData = ref(getDefaultFormData());
+const formData = ref<FormData>(getDefaultFormData());
 const isSubmitting = ref(false);
 
-// Watch for dialog open state changes to populate/reset form
 watch(
   () => store.isTaskDialogOpen,
   (isOpen) => {
     if (isOpen && store.editingTask) {
+      const dueDateString = formatDateForInput(store.editingTask.dueDate);
       formData.value = {
         title: store.editingTask.title,
         description: store.editingTask.description ?? "",
         status: store.editingTask.status,
         priority: store.editingTask.priority,
-        dueDate: formatDateForInput(store.editingTask.dueDate),
+        dueDate: stringToDateValue(dueDateString) as CalendarDate | null,
       };
     } else if (!isOpen) {
       formData.value = getDefaultFormData();
@@ -65,6 +79,19 @@ const isOpen = computed({
 
 const isEditing = computed(() => store.editingTask !== null);
 
+const dueDateModel: WritableComputedRef<DateValue | null> = computed({
+  get: (): DateValue | null => {
+    return formData.value.dueDate as unknown as DateValue | null;
+  },
+  set: (value: DateValue | null | undefined) => {
+    if (value === null || value === undefined) {
+      formData.value.dueDate = null;
+    } else {
+      formData.value.dueDate = value as CalendarDate;
+    }
+  },
+});
+
 const handleSubmit = async () => {
   if (!formData.value.title.trim() || isSubmitting.value || !store.taskDialogProjectId) {
     return;
@@ -80,7 +107,7 @@ const handleSubmit = async () => {
         description: formData.value.description || null,
         status: formData.value.status,
         priority: formData.value.priority,
-        dueDate: formData.value.dueDate || null,
+        dueDate: dateValueToString(formData.value.dueDate as CalendarDate | null),
       },
     });
     store.closeTaskDialog();
@@ -154,7 +181,7 @@ const handleClose = () => {
         </FormItem>
         <FormItem>
           <Label>Due Date</Label>
-          <Input v-model="formData.dueDate" type="date" :disabled="isSubmitting" />
+          <DatePicker v-model="dueDateModel" :disabled="isSubmitting" />
         </FormItem>
       </div>
       <DialogFooter>
