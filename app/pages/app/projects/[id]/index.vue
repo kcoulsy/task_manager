@@ -10,7 +10,7 @@ import type { Project, Task } from "~~/generated/prisma/client";
 const route = useRoute();
 const projectId = route.params.id as string;
 
-const { getStatusColor, getPriorityColor, formatDate } = useTaskHelpers();
+const { getStatusColor, getStatusCircleColor, getPriorityColor, formatDate, TASK_STATUS_LABELS } = useTaskHelpers();
 
 // Must call composables BEFORE any await statements
 const dialogStore = useDialogStore();
@@ -99,8 +99,9 @@ const handleTaskCreated = () => {
                   </div>
                 </td>
                 <td class="py-3 px-4">
-                  <span class="text-xs px-2 py-1 rounded font-medium" :class="getStatusColor(task.status)">
-                    {{ task.status.replace("_", " ") }}
+                  <span class="inline-flex items-center gap-2 text-xs px-2 py-1 rounded font-medium" :class="getStatusColor(task.status)">
+                    <span class="w-2 h-2 rounded-full" :class="getStatusCircleColor(task.status)"></span>
+                    {{ TASK_STATUS_LABELS[task.status] }}
                   </span>
                 </td>
                 <td class="py-3 px-4">

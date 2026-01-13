@@ -23,7 +23,7 @@ const props = defineProps<{
 }>();
 
 const store = useDialogStore();
-const { formatDateForInput, TASK_STATUS, PRIORITY, TASK_STATUS_LABELS, PRIORITY_LABELS } = useTaskHelpers();
+const { formatDateForInput, TASK_STATUS, PRIORITY, TASK_STATUS_LABELS, PRIORITY_LABELS, getStatusCircleColor } = useTaskHelpers();
 
 const getDefaultFormData = () => ({
   title: "",
@@ -120,11 +120,21 @@ const handleClose = () => {
           <Label>Status</Label>
           <Select v-model="formData.status" :disabled="isSubmitting">
             <SelectTrigger class="w-full">
-              <SelectValue placeholder="Select status" />
+              <SelectValue placeholder="Select status">
+                <template v-if="formData.status">
+                  <span class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full" :class="getStatusCircleColor(formData.status)"></span>
+                    {{ TASK_STATUS_LABELS[formData.status] }}
+                  </span>
+                </template>
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem v-for="(label, value) in TASK_STATUS_LABELS" :key="value" :value="value">
-                {{ label }}
+                <span class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full" :class="getStatusCircleColor(value)"></span>
+                  {{ label }}
+                </span>
               </SelectItem>
             </SelectContent>
           </Select>

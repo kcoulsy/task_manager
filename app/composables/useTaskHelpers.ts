@@ -13,6 +13,16 @@ export function useTaskHelpers() {
 
   const getStatusLabel = (status: TaskStatus) => TASK_STATUS_LABELS[status] ?? status;
 
+  const getStatusCircleColor = (status: TaskStatus): string => {
+    const circleColors: Record<TaskStatus, string> = {
+      TODO: "bg-gray-700",
+      IN_PROGRESS: "bg-blue-700",
+      DONE: "bg-green-700",
+      CANCELLED: "bg-red-700",
+    };
+    return circleColors[status] ?? circleColors.TODO;
+  };
+
   const getPriorityColor = (priority: Priority) => PRIORITY_COLORS[priority] ?? PRIORITY_COLORS.MEDIUM;
 
   const getPriorityLabel = (priority: Priority) => PRIORITY_LABELS[priority] ?? priority;
@@ -33,6 +43,7 @@ export function useTaskHelpers() {
   return {
     getStatusColor,
     getStatusLabel,
+    getStatusCircleColor,
     getPriorityColor,
     getPriorityLabel,
     formatDate,

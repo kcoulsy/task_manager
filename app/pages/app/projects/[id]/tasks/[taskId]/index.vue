@@ -10,7 +10,7 @@ const route = useRoute();
 const projectId = route.params.id as string;
 const taskId = route.params.taskId as string;
 
-const { getStatusColor, getPriorityColor, formatDate, TASK_STATUS_LABELS, PRIORITY_LABELS } = useTaskHelpers();
+const { getStatusColor, getStatusCircleColor, getPriorityColor, formatDate, TASK_STATUS_LABELS, PRIORITY_LABELS } = useTaskHelpers();
 
 if (!projectId || !taskId) {
   throw createError({
@@ -72,7 +72,8 @@ const formatDetailDate = (date: string | Date | null | undefined) => {
         <div class="grid grid-cols-2 gap-4">
           <div>
             <h3 class="font-semibold text-sm text-gray-700 mb-2">Status</h3>
-            <span class="inline-block text-sm px-3 py-1 rounded font-medium" :class="getStatusColor(task.status)">
+            <span class="inline-flex items-center gap-2 text-sm px-3 py-1 rounded font-medium" :class="getStatusColor(task.status)">
+              <span class="w-2 h-2 rounded-full" :class="getStatusCircleColor(task.status)"></span>
               {{ TASK_STATUS_LABELS[task.status] }}
             </span>
           </div>
