@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useQuery } from "@tanstack/vue-query";
-import { Card, CardHeader, CardContent } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
+import TaskDetailLayout from "~/components/TaskDetailLayout.vue";
+import TaskHeader from "~/components/TaskHeader.vue";
+import TaskMainContent from "~/components/TaskMainContent.vue";
+import MetadataSidebar from "~/components/MetadataSidebar.vue";
+import SidebarField from "~/components/SidebarField.vue";
 import CommentSection from "~/components/CommentSection.vue";
 import EditableTitle from "~/components/EditableTitle.vue";
 import EditableDescription from "~/components/EditableDescription.vue";
@@ -98,42 +101,55 @@ useHead(
     <p class="text-gray-500">Loading task...</p>
   </div>
 
-  <div v-else-if="task" class="space-y-6">
-    <div class="flex items-center justify-between">
-      <div>
-        <Button variant="outline" @click="navigateTo(ROUTES.APP.PROJECT(projectId))"> ← Back to Project </Button>
-      </div>
-    </div>
+  <div v-else-if="task">
+    <TaskHeader :project-name="task.project.name" :project-id="projectId" :task-title="task.title" />
 
-    <Card>
-      <CardHeader>
-        <EditableTitle :title="task.title" :project-id="projectId" :task-id="taskId" />
-      </CardHeader>
-      <CardContent class="space-y-4">
-        <EditableDescription :description="task.description" :project-id="projectId" :task-id="taskId" />
+    <TaskDetailLayout>
+      <template #main>
+        <TaskMainContent>
+          <EditableTitle :title="task.title" :project-id="projectId" :task-id="taskId" />
 
-        <div class="grid grid-cols-2 gap-4">
-          <EditableStatus :status="task.status" :project-id="projectId" :task-id="taskId" />
+          <EditableDescription :description="task.description" :project-id="projectId" :task-id="taskId" />
 
-          <EditablePriority :priority="task.priority" :project-id="projectId" :task-id="taskId" />
+          <ClientOnly>
+            <CommentSection :task-id="taskId" :project-id="projectId" :initial-comments="initialComments || []" />
+          </ClientOnly>
+        </TaskMainContent>
+      </template>
 
-          <EditableDueDate :due-date="task.dueDate" :project-id="projectId" :task-id="taskId" />
+      <template #sidebar>
+        <MetadataSidebar>
+          <SidebarField icon="Activity" label="Status">
+            <EditableStatus :status="task.status" :project-id="projectId" :task-id="taskId" />
+          </SidebarField>
 
-          <div>
-            <h3 class="font-semibold text-sm text-gray-700 mb-2">Created</h3>
-            <p class="text-gray-600">{{ formatDetailDate(task.createdAt) }}</p>
-          </div>
-        </div>
+          <SidebarField icon="Flag" label="Priority">
+            <EditablePriority :priority="task.priority" :project-id="projectId" :task-id="taskId" />
+          </SidebarField>
 
-        <div>
-          <h3 class="font-semibold text-sm text-gray-700 mb-2">Project</h3>
-          <p class="text-gray-600">{{ task.project.name }}</p>
-        </div>
-      </CardContent>
-    </Card>
+          <SidebarField icon="Calendar" label="Due Date">
+            <EditableDueDate :due-date="task.dueDate" :project-id="projectId" :task-id="taskId" />
+          </SidebarField>
 
-    <ClientOnly>
-      <CommentSection :task-id="taskId" :project-id="projectId" :initial-comments="initialComments || []" />
-    </ClientOnly>
+          <SidebarField icon="User" label="Assignee">
+            <span class="text-gray-500 italic text-sm">Unassigned</span>
+          </SidebarField>
+
+          <SidebarField icon="Tag" label="Labels">
+            <span class="text-gray-500 italic text-sm">No labels</span>
+          </SidebarField>
+
+          <div class="border-t border-gray-200 mt-2 pt-2"></div>
+
+          <SidebarField icon="Clock" label="Created">
+            <span class="text-sm text-gray-700">{{ formatDetailDate(task.createdAt) }}</span>
+          </SidebarField>
+
+          <SidebarField icon="RefreshCw" label="Updated">
+            <span class="text-sm text-gray-700">{{ formatDetailDate(task.updatedAt) }}</span>
+          </SidebarField>
+        </MetadataSidebar>
+      </template>
+    </TaskDetailLayout>
   </div>
 </template>

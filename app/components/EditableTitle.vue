@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, nextTick } from "vue";
 import { Check, X } from "lucide-vue-next";
-import { CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { useUpdateTask } from "~/composables/useUpdateTask";
@@ -49,17 +48,20 @@ const cancel = () => {
 </script>
 
 <template>
-  <div v-if="!editing" class="flex items-center gap-2 group">
-    <CardTitle class="text-2xl cursor-pointer hover:text-gray-700 transition-colors" @click="startEditing">
+  <div v-if="!editing" class="flex items-center gap-3 group">
+    <h1
+      class="text-4xl md:text-5xl font-display font-bold tracking-tight text-editorial-navy cursor-pointer hover:scale-[1.01] transition-transform"
+      @click="startEditing"
+    >
       {{ title }}
-    </CardTitle>
-    <span v-if="isUpdating" class="text-sm text-gray-500">Saving...</span>
+    </h1>
+    <span v-if="isUpdating" class="text-sm text-slate-500">Saving...</span>
   </div>
   <div v-else class="flex items-center gap-2">
     <Input
       id="title-input"
       v-model="editValue"
-      class="text-2xl font-semibold"
+      class="text-4xl md:text-5xl font-display font-bold tracking-tight"
       @blur="save"
       @keydown.enter="save"
       @keydown.esc="cancel"

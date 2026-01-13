@@ -54,27 +54,24 @@ const dueDateModel = computed<DateValue | undefined>({
 </script>
 
 <template>
-  <div>
-    <h3 class="font-semibold text-sm text-gray-700 mb-2">Due Date</h3>
-    <Popover v-slot="{ close }">
-      <PopoverTrigger as-child>
-        <Button
-          variant="ghost"
-          class="text-gray-600 cursor-pointer hover:text-gray-800 transition-colors h-auto p-0 font-normal border-0 shadow-none hover:bg-transparent"
-        >
-          {{ formatDetailDate(dueDate) }}
-          <span v-if="isUpdating" class="ml-2 text-xs text-gray-500">Saving...</span>
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent class="w-auto p-0" align="start">
-        <Calendar
-          v-model="dueDateModel"
-          :default-placeholder="today(getLocalTimeZone())"
-          layout="month-and-year"
-          initial-focus
-          @update:model-value="close"
-        />
-      </PopoverContent>
-    </Popover>
-  </div>
+  <Popover v-slot="{ close }">
+    <PopoverTrigger as-child>
+      <Button
+        variant="ghost"
+        class="text-gray-700 cursor-pointer hover:text-gray-900 transition-colors h-auto p-0 font-normal border-0 shadow-none hover:bg-transparent justify-start"
+      >
+        {{ formatDetailDate(dueDate) }}
+        <span v-if="isUpdating" class="ml-2 text-xs text-gray-500">Saving...</span>
+      </Button>
+    </PopoverTrigger>
+    <PopoverContent class="w-auto p-0" align="start">
+      <Calendar
+        v-model="dueDateModel"
+        :default-placeholder="today(getLocalTimeZone())"
+        layout="month-and-year"
+        initial-focus
+        @update:model-value="close"
+      />
+    </PopoverContent>
+  </Popover>
 </template>

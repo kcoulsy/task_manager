@@ -25,31 +25,28 @@ const handleChange = async (newStatus: unknown) => {
 </script>
 
 <template>
-  <div>
-    <h3 class="font-semibold text-sm text-gray-700 mb-2">Status</h3>
-    <Select :model-value="status" :open="selectOpen" @update:open="selectOpen = $event" @update:model-value="handleChange">
-      <SelectTrigger
-        class="inline-flex items-center gap-2 text-sm px-3 py-1 rounded font-medium cursor-pointer hover:opacity-80 transition-opacity w-auto h-auto border-0 shadow-none p-0"
-        :class="getStatusColor(status)"
-      >
-        <SelectValue placeholder="Select status">
-          <template v-if="status">
-            <span class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full" :class="getStatusCircleColor(status)"></span>
-              {{ TASK_STATUS_LABELS[status] }}
-              <span v-if="isUpdating" class="ml-2 text-xs">Saving...</span>
-            </span>
-          </template>
-        </SelectValue>
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem v-for="(label, value) in TASK_STATUS_LABELS" :key="value" :value="value">
+  <Select :model-value="status" :open="selectOpen" @update:open="selectOpen = $event" @update:model-value="handleChange">
+    <SelectTrigger
+      class="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-md font-medium cursor-pointer hover:opacity-80 transition-all w-auto h-auto shadow-none"
+      :class="getStatusColor(status)"
+    >
+      <SelectValue placeholder="Select status">
+        <template v-if="status">
           <span class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full" :class="getStatusCircleColor(value)"></span>
-            {{ label }}
+            <span class="w-2 h-2 rounded-full" :class="getStatusCircleColor(status)"></span>
+            {{ TASK_STATUS_LABELS[status] }}
+            <span v-if="isUpdating" class="ml-2 text-xs">Saving...</span>
           </span>
-        </SelectItem>
-      </SelectContent>
-    </Select>
-  </div>
+        </template>
+      </SelectValue>
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem v-for="(label, value) in TASK_STATUS_LABELS" :key="value" :value="value">
+        <span class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full" :class="getStatusCircleColor(value)"></span>
+          {{ label }}
+        </span>
+      </SelectItem>
+    </SelectContent>
+  </Select>
 </template>

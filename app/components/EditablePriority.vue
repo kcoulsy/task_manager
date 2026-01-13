@@ -25,30 +25,27 @@ const handleChange = async (newPriority: unknown) => {
 </script>
 
 <template>
-  <div>
-    <h3 class="font-semibold text-sm text-gray-700 mb-2">Priority</h3>
-    <Select
-      :model-value="priority"
-      :open="selectOpen"
-      @update:open="selectOpen = $event"
-      @update:model-value="handleChange"
+  <Select
+    :model-value="priority"
+    :open="selectOpen"
+    @update:open="selectOpen = $event"
+    @update:model-value="handleChange"
+  >
+    <SelectTrigger
+      class="inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-md font-medium cursor-pointer hover:opacity-80 transition-all w-auto h-auto shadow-none"
+      :class="getPriorityColor(priority)"
     >
-      <SelectTrigger
-        class="inline-flex items-center gap-2 text-sm px-3 py-1 rounded font-medium cursor-pointer hover:opacity-80 transition-opacity w-auto h-auto border-0 shadow-none"
-        :class="getPriorityColor(priority)"
-      >
-        <SelectValue placeholder="Select priority">
-          <template v-if="priority">
-            {{ PRIORITY_LABELS[priority] }}
-            <span v-if="isUpdating" class="ml-2 text-xs">Saving...</span>
-          </template>
-        </SelectValue>
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem v-for="(label, value) in PRIORITY_LABELS" :key="value" :value="value">
-          {{ label }}
-        </SelectItem>
-      </SelectContent>
-    </Select>
-  </div>
+      <SelectValue placeholder="Select priority">
+        <template v-if="priority">
+          {{ PRIORITY_LABELS[priority] }}
+          <span v-if="isUpdating" class="ml-2 text-xs">Saving...</span>
+        </template>
+      </SelectValue>
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem v-for="(label, value) in PRIORITY_LABELS" :key="value" :value="value">
+        {{ label }}
+      </SelectItem>
+    </SelectContent>
+  </Select>
 </template>

@@ -15,10 +15,10 @@ export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
 };
 
 export const TASK_STATUS_COLORS: Record<TaskStatus, string> = {
-  TODO: "bg-gray-100 text-gray-700",
-  IN_PROGRESS: "bg-blue-100 text-blue-700",
-  DONE: "bg-green-100 text-green-700",
-  CANCELLED: "bg-red-100 text-red-700",
+  TODO: "bg-indigo-50 text-indigo-700 border border-indigo-200",
+  IN_PROGRESS: "bg-blue-50 text-blue-700 border border-blue-200",
+  DONE: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  CANCELLED: "bg-slate-50 text-slate-700 border border-slate-200",
 };
 
 export const PRIORITY = {
@@ -36,10 +36,10 @@ export const PRIORITY_LABELS: Record<Priority, string> = {
 };
 
 export const PRIORITY_COLORS: Record<Priority, string> = {
-  LOW: "bg-gray-100 text-gray-700",
-  MEDIUM: "bg-yellow-100 text-yellow-700",
-  HIGH: "bg-orange-100 text-orange-700",
-  URGENT: "bg-red-100 text-red-700",
+  LOW: "bg-slate-50 text-slate-700 border border-slate-200",
+  MEDIUM: "bg-amber-50 text-amber-700 border border-amber-200",
+  HIGH: "bg-orange-50 text-orange-700 border border-orange-200",
+  URGENT: "bg-red-50 text-red-700 border border-red-200 shadow-sm shadow-red-100",
 };
 
 export const ERROR_MESSAGES = {

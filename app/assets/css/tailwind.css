@@ -74,6 +74,22 @@
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.705 0.015 286.067);
+
+  /* Editorial Design System */
+  --editorial-navy: #1a2b49;
+  --editorial-canvas: #f8f9fb;
+  --editorial-accent: #e65c00;
+  --editorial-slate: #64748b;
+
+  /* Layout */
+  --header-height: 72px;
+  --sidebar-width: 360px;
+  --content-max-width: 1400px;
+
+  /* Typography */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 .dark {

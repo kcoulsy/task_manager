@@ -13,5 +13,13 @@ export default defineNuxtConfig({
     plugins: [tailwindcss()],
   },
 
-  modules: ["shadcn-nuxt", "@nuxt/eslint", "@pinia/nuxt"],
+  modules: ["shadcn-nuxt", "@nuxt/eslint", "@pinia/nuxt", "@nuxt/fonts"],
+
+  fonts: {
+    families: [
+      { name: "Playfair Display", provider: "google", weights: ["700", "900"] },
+      { name: "Inter", provider: "google", weights: ["400", "500", "600"] },
+      { name: "JetBrains Mono", provider: "google", weights: ["400", "500"] },
+    ],
+  },
 });

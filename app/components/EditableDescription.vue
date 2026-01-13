@@ -10,7 +10,7 @@ const props = defineProps<{
   taskId: string;
 }>();
 
-const { updateTask, isPending: isUpdating } = useUpdateTask(props.projectId, props.taskId);
+const { updateTask } = useUpdateTask(props.projectId, props.taskId);
 
 const editing = ref(false);
 const editValue = ref("");
@@ -43,30 +43,30 @@ const cancel = () => {
 </script>
 
 <template>
-  <div>
-    <h3 class="font-semibold text-sm text-gray-700 mb-2">Description</h3>
+  <div class="description-section">
+    <h2 class="text-sm font-semibold text-slate-600 uppercase tracking-wide mb-3">Description</h2>
     <div v-if="!editing">
       <p
         v-if="description"
-        class="text-gray-600 whitespace-pre-wrap cursor-pointer hover:text-gray-800 transition-colors min-h-6"
+        class="text-lg leading-relaxed text-gray-800 whitespace-pre-wrap cursor-pointer hover:text-gray-900 transition-colors min-h-6"
         @click="startEditing"
       >
         {{ description }}
       </p>
       <p
         v-else
-        class="text-gray-400 italic cursor-pointer hover:text-gray-600 transition-colors min-h-6"
+        class="text-lg leading-relaxed text-gray-400 italic cursor-pointer hover:text-gray-600 transition-colors min-h-6"
         @click="startEditing"
       >
-        Click to add description...
+        Add a description to provide context for this task...
       </p>
     </div>
     <div v-else class="flex items-start gap-2">
       <textarea
         id="description-textarea"
         v-model="editValue"
-        class="flex min-h-20 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50"
-        placeholder="Task description (optional)"
+        class="flex min-h-32 w-full rounded-md border border-input bg-transparent px-4 py-3 text-lg leading-relaxed shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50"
+        placeholder="Add a description to provide context for this task..."
         @blur="save"
         @keydown.esc="cancel"
       />
