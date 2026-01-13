@@ -37,6 +37,9 @@ export const ROUTES = {
       UPDATE: (projectId: string, taskId: string) => `/api/projects/${projectId}/tasks/${taskId}`,
       DELETE: (projectId: string, taskId: string) => `/api/projects/${projectId}/tasks/${taskId}`,
     },
+    TASK_COMMENTS: (projectId: string, taskId: string) => `/api/projects/${projectId}/tasks/${taskId}/comments`,
+    TASK_COMMENT: (projectId: string, taskId: string, commentId: string) => `/api/projects/${projectId}/tasks/${taskId}/comments/${commentId}`,
+    COMMENT_REACTIONS: (projectId: string, taskId: string, commentId: string) => `/api/projects/${projectId}/tasks/${taskId}/comments/${commentId}/reactions`,
   },
 } as const;
 

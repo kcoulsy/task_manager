@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
+import CommentSection from "~/components/CommentSection.vue";
 import { ROUTES } from "~~/utils/routes";
 import { HTTP_STATUS } from "~~/utils/constants";
 import { useTaskHelpers } from "~/composables/useTaskHelpers";
@@ -102,5 +103,7 @@ const formatDetailDate = (date: string | Date | null | undefined) => {
         </div>
       </CardContent>
     </Card>
+
+    <CommentSection :task-id="taskId" :project-id="projectId" />
   </div>
 </template>
